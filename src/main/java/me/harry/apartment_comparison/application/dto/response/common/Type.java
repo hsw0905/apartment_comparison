@@ -1,4 +1,4 @@
-package me.harry.apartment_comparison.common.response;
+package me.harry.apartment_comparison.application.dto.response.common;
 
 public enum Type {
     SUCCESS("SUCCESS"),

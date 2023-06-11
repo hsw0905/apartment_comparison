@@ -1,4 +1,4 @@
-package me.harry.apartment_comparison.security.domain;
+package me.harry.apartment_comparison.presentation.security;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.JWTVerifier;

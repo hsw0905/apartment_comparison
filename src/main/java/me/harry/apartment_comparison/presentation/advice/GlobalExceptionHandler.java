@@ -1,10 +1,10 @@
-package me.harry.apartment_comparison.common.advice;
+package me.harry.apartment_comparison.presentation.advice;
 
 import lombok.extern.slf4j.Slf4j;
-import me.harry.apartment_comparison.common.exception.BadRequestException;
-import me.harry.apartment_comparison.common.response.ApiResponse;
-import me.harry.apartment_comparison.common.response.ErrorResponse;
-import me.harry.apartment_comparison.common.response.Type;
+import me.harry.apartment_comparison.application.exception.BadRequestException;
+import me.harry.apartment_comparison.application.dto.response.common.ApiResponse;
+import me.harry.apartment_comparison.application.dto.response.common.ErrorResponse;
+import me.harry.apartment_comparison.application.dto.response.common.Type;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;

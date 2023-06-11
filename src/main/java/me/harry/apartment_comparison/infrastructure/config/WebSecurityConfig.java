@@ -1,6 +1,6 @@
-package me.harry.apartment_comparison.common.config;
+package me.harry.apartment_comparison.infrastructure.config;
 
-import me.harry.apartment_comparison.security.filter.TokenAuthenticationFilter;
+import me.harry.apartment_comparison.presentation.security.TokenAuthenticationFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -29,7 +29,7 @@ public class WebSecurityConfig {
 
         http.addFilterBefore(tokenAuthenticationFilter, BasicAuthenticationFilter.class);
 
-        http.authorizeHttpRequests((requests) -> requests.anyRequest().permitAll());
+        http.authorizeHttpRequests((requests) -> requests.anyRequest().authenticated());
         return http.build();
     }
 
