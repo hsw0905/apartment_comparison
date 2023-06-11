@@ -4,6 +4,7 @@ import me.harry.apartment_comparison.ApartmentComparisonApplication;
 import me.harry.apartment_comparison.infrastructure.config.WebSecurityConfig;
 import me.harry.apartment_comparison.presentation.security.AuthenticationService;
 import me.harry.apartment_comparison.presentation.security.TokenGenerator;
+import me.harry.apartment_comparison.presentation.security.TokenVerifier;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.test.context.ContextConfiguration;
@@ -24,6 +25,9 @@ public abstract class ControllerTest {
 
     @SpyBean
     protected TokenGenerator tokenGenerator;
+
+    @SpyBean
+    protected TokenVerifier tokenVerifier;
 
     protected String userAccessToken;
 

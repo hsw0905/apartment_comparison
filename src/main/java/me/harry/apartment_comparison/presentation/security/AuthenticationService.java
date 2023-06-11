@@ -8,14 +8,14 @@ import java.util.List;
 
 @Component
 public class AuthenticationService {
-    private final TokenGenerator tokenGenerator;
+    private final TokenVerifier tokenVerifier;
 
-    public AuthenticationService(TokenGenerator tokenGenerator) {
-        this.tokenGenerator = tokenGenerator;
+    public AuthenticationService(TokenVerifier tokenVerifier) {
+        this.tokenVerifier = tokenVerifier;
     }
 
     public Authentication authenticate(String token) {
-        if (!tokenGenerator.verify(token)) {
+        if (!tokenVerifier.verify(token)) {
             return null;
         }
         AuthUserInfo authUserInfo = AuthUserInfo.authenticated("id", "ROLE_USER", token);

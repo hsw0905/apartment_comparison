@@ -23,14 +23,4 @@ public class TokenGenerator {
                 .withExpiresAt(expireTime)
                 .sign(algorithm);
     }
-
-    public boolean verify(String token) {
-        try {
-            JWTVerifier verifier = JWT.require(algorithm).build();
-            verifier.verify(token);
-            return true;
-        } catch (JWTVerificationException e) {
-            return false;
-        }
-    }
 }
