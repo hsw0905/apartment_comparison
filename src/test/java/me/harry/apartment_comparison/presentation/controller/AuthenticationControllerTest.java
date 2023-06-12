@@ -1,10 +1,14 @@
 package me.harry.apartment_comparison.presentation.controller;
 
+import me.harry.apartment_comparison.domain.model.UserRole;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.test.web.servlet.MockMvc;
+
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -38,7 +42,21 @@ class AuthenticationControllerTest extends ControllerTest {
         mockMvc.perform(get("/api/v1/auth")
                         .header("Authorization", "Bearer " + userAccessToken)
                 )
-                .andDo(print())
                 .andExpect(status().isOk());
+    }
+
+    @DisplayName("유효기간이 지난 토큰으로 접근하면 401을 반환한다.")
+    @Test
+    void accessDeniedWithExpiredToken() throws Exception {
+        // given
+        String expiredToken = tokenGenerator.generate(USER_ID, UserRole.ROLE_USER, Instant.now().minus(5, ChronoUnit.MINUTES));
+
+        // when then
+        mockMvc.perform(get("/api/v1/auth")
+                .header("Authorization", "Bearer " + expiredToken)
+        )
+                .andDo(print())
+                .andExpect(status().isUnauthorized());
+
     }
 }

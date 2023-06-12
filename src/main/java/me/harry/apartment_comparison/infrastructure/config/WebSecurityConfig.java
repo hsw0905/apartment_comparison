@@ -1,5 +1,6 @@
 package me.harry.apartment_comparison.infrastructure.config;
 
+import me.harry.apartment_comparison.presentation.security.ExceptionHandlerFilter;
 import me.harry.apartment_comparison.presentation.security.TokenAuthenticationFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -16,9 +17,11 @@ import static org.springframework.security.config.Customizer.withDefaults;
 @Configuration
 @EnableWebSecurity
 public class WebSecurityConfig {
+    private final ExceptionHandlerFilter exceptionHandlerFilter;
     private final TokenAuthenticationFilter tokenAuthenticationFilter;
 
-    public WebSecurityConfig(TokenAuthenticationFilter tokenAuthenticationFilter) {
+    public WebSecurityConfig(ExceptionHandlerFilter exceptionHandlerFilter, TokenAuthenticationFilter tokenAuthenticationFilter) {
+        this.exceptionHandlerFilter = exceptionHandlerFilter;
         this.tokenAuthenticationFilter = tokenAuthenticationFilter;
     }
 
@@ -28,6 +31,7 @@ public class WebSecurityConfig {
         http.csrf(AbstractHttpConfigurer::disable);
 
         http.addFilterBefore(tokenAuthenticationFilter, BasicAuthenticationFilter.class);
+        http.addFilterBefore(exceptionHandlerFilter, TokenAuthenticationFilter.class);
 
         http.authorizeHttpRequests((requests) -> requests.anyRequest().authenticated());
         return http.build();

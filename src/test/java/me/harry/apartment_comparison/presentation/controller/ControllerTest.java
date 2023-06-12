@@ -1,6 +1,7 @@
 package me.harry.apartment_comparison.presentation.controller;
 
 import me.harry.apartment_comparison.ApartmentComparisonApplication;
+import me.harry.apartment_comparison.domain.model.UserRole;
 import me.harry.apartment_comparison.infrastructure.config.WebSecurityConfig;
 import me.harry.apartment_comparison.presentation.security.AuthenticationService;
 import me.harry.apartment_comparison.presentation.security.TokenGenerator;
@@ -35,8 +36,8 @@ public abstract class ControllerTest {
 
     @BeforeEach
     void setUpTokenAndUserDetailsForAuthentication() {
-        userAccessToken = tokenGenerator.generate(USER_ID, Instant.now().plus(5, ChronoUnit.MINUTES));
-        adminAccessToken = tokenGenerator.generate(USER_ID, Instant.now().plus(5, ChronoUnit.MINUTES));
+        userAccessToken = tokenGenerator.generate(USER_ID, UserRole.ROLE_USER, Instant.now().plus(5, ChronoUnit.MINUTES));
+        adminAccessToken = tokenGenerator.generate(USER_ID, UserRole.ROLE_ADMIN, Instant.now().plus(5, ChronoUnit.MINUTES));
 
 
     }

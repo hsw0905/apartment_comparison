@@ -18,7 +18,8 @@ public class AuthenticationService {
         if (!tokenVerifier.verify(token)) {
             return null;
         }
-        AuthUserInfo authUserInfo = AuthUserInfo.authenticated("id", "ROLE_USER", token);
+
+        AuthUserInfo authUserInfo = tokenVerifier.extractAuthUserInfo(token);
 
         return UsernamePasswordAuthenticationToken.authenticated(authUserInfo, null, List.of(authUserInfo::role));
 

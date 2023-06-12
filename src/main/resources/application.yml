@@ -4,3 +4,8 @@ spring:
   config:
     import: secret.yml
 
+server:
+  servlet:
+    encoding:
+      charset: UTF-8
+      force: true

@@ -3,7 +3,12 @@ package me.harry.apartment_comparison.presentation.security;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
+import com.auth0.jwt.exceptions.JWTDecodeException;
 import com.auth0.jwt.exceptions.JWTVerificationException;
+import com.auth0.jwt.exceptions.TokenExpiredException;
+import com.auth0.jwt.interfaces.Claim;
+import com.auth0.jwt.interfaces.DecodedJWT;
+import me.harry.apartment_comparison.application.exception.UnAuthorizedException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -20,8 +25,22 @@ public class TokenVerifier {
             JWTVerifier verifier = JWT.require(algorithm).build();
             verifier.verify(token);
             return true;
+        } catch (TokenExpiredException e) {
+            throw new UnAuthorizedException("유효기간이 만료된 토큰입니다.");
         } catch (JWTVerificationException e) {
             return false;
+        }
+    }
+
+    public AuthUserInfo extractAuthUserInfo(String token) {
+        try {
+            DecodedJWT decoded = JWT.decode(token);
+            Claim userId = decoded.getClaim("userId");
+            Claim role = decoded.getClaim("role");
+
+            return AuthUserInfo.authenticated(userId.asString(), role.asString(), token);
+        } catch (JWTDecodeException e) {
+            throw new UnAuthorizedException("올바르지 않은 JWT Format 입니다.");
         }
     }
 }
