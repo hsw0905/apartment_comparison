@@ -4,6 +4,7 @@ import me.harry.apartment_comparison.presentation.security.ExceptionHandlerFilte
 import me.harry.apartment_comparison.presentation.security.TokenAuthenticationFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -33,7 +34,10 @@ public class WebSecurityConfig {
         http.addFilterBefore(tokenAuthenticationFilter, BasicAuthenticationFilter.class);
         http.addFilterBefore(exceptionHandlerFilter, TokenAuthenticationFilter.class);
 
-        http.authorizeHttpRequests((requests) -> requests.anyRequest().authenticated());
+        http.authorizeHttpRequests(
+                requests -> requests.requestMatchers(HttpMethod.POST, "/api/v1/auth/login").permitAll()
+                        .anyRequest().authenticated()
+        );
         return http.build();
     }
 

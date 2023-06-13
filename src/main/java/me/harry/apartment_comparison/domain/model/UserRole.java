@@ -1,8 +1,5 @@
 package me.harry.apartment_comparison.domain.model;
 
-import lombok.Getter;
-
-@Getter
 public enum UserRole {
     ROLE_USER("ROLE_USER"),
     ROLE_ADMIN("ROLE_ADMIN");
@@ -11,5 +8,9 @@ public enum UserRole {
 
     UserRole(String value) {
         this.value = value;
+    }
+    @Override
+    public String toString() {
+        return value;
     }
 }

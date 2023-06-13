@@ -1,9 +1,9 @@
 package me.harry.apartment_comparison.presentation.advice;
 
 import lombok.extern.slf4j.Slf4j;
-import me.harry.apartment_comparison.application.dto.response.common.ApiResponse;
-import me.harry.apartment_comparison.application.dto.response.common.ErrorResponse;
-import me.harry.apartment_comparison.application.dto.response.common.Type;
+import me.harry.apartment_comparison.presentation.dto.response.common.ApiResponse;
+import me.harry.apartment_comparison.presentation.dto.response.common.ErrorResponse;
+import me.harry.apartment_comparison.presentation.dto.response.common.Type;
 import me.harry.apartment_comparison.application.exception.BadRequestException;
 import me.harry.apartment_comparison.application.exception.UnAuthorizedException;
 import org.springframework.http.HttpStatus;

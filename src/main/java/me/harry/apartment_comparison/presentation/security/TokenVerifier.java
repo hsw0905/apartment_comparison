@@ -38,7 +38,7 @@ public class TokenVerifier {
             Claim userId = decoded.getClaim("userId");
             Claim role = decoded.getClaim("role");
 
-            return AuthUserInfo.authenticated(userId.asString(), role.asString(), token);
+            return AuthUserInfo.of(userId.asString(), role.asString(), token);
         } catch (JWTDecodeException e) {
             throw new UnAuthorizedException("올바르지 않은 JWT Format 입니다.");
         }

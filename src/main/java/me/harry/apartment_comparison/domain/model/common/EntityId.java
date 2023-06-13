@@ -16,7 +16,7 @@ import java.util.Objects;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public abstract class EntityId {
 
-    @Column(name = "id")
+    @Column(name = "id", length = 100)
     private String value;
 
     protected EntityId(String value) {
