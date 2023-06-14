@@ -2,6 +2,7 @@ package me.harry.apartment_comparison.presentation.controller;
 
 import me.harry.apartment_comparison.ApartmentComparisonApplication;
 import me.harry.apartment_comparison.domain.model.UserRole;
+import me.harry.apartment_comparison.infrastructure.config.RedisConfig;
 import me.harry.apartment_comparison.infrastructure.config.WebSecurityConfig;
 import me.harry.apartment_comparison.presentation.security.AuthenticationService;
 import me.harry.apartment_comparison.presentation.security.TokenGenerator;
@@ -16,13 +17,14 @@ import java.time.temporal.ChronoUnit;
 @ContextConfiguration(classes = {
         ApartmentComparisonApplication.class,
         WebSecurityConfig.class,
+        RedisConfig.class
 })
 public abstract class ControllerTest {
     protected static final String USER_ID = "UserId";
     protected static final String ADMIN_ID = "AdminId";
 
     @SpyBean
-    private AuthenticationService authenticationService;
+    protected AuthenticationService authenticationService;
 
     @SpyBean
     protected TokenGenerator tokenGenerator;
