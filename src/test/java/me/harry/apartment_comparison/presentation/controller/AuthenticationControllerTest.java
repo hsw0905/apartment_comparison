@@ -1,6 +1,7 @@
 package me.harry.apartment_comparison.presentation.controller;
 
 import me.harry.apartment_comparison.application.dto.request.LoginServiceRequest;
+import me.harry.apartment_comparison.application.dto.request.LogoutServiceRequest;
 import me.harry.apartment_comparison.application.dto.response.LoginResponse;
 import me.harry.apartment_comparison.application.exception.LoginFailException;
 import me.harry.apartment_comparison.application.service.LoginService;
@@ -119,7 +120,7 @@ class AuthenticationControllerTest extends ControllerTest {
                 .andDo(print())
                 .andExpect(status().isOk());
 
-        verify(logoutService).logout(any(String.class));
+        verify(logoutService).logout(any(LogoutServiceRequest.class));
     }
 
     @DisplayName("토큰이 없으면 로그아웃 할 수 없으며 403을 반환한다.")

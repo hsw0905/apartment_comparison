@@ -1,6 +1,7 @@
 package me.harry.apartment_comparison.presentation.controller;
 
 import jakarta.validation.Valid;
+import me.harry.apartment_comparison.application.dto.request.LogoutServiceRequest;
 import me.harry.apartment_comparison.application.dto.response.LoginResponse;
 import me.harry.apartment_comparison.application.service.LoginService;
 import me.harry.apartment_comparison.application.service.LogoutService;
@@ -36,7 +37,7 @@ public class AuthenticationController {
     @DeleteMapping("/logout")
     public ResponseEntity<ApiResponse<Void>> logout(Authentication authentication) {
         AuthUserInfo authUserInfo = (AuthUserInfo) authentication.getPrincipal();
-        logoutService.logout(authUserInfo.id());
+        logoutService.logout(new LogoutServiceRequest(authUserInfo.id(), authUserInfo.accessToken()));
 
         return ResponseEntity.ok(ApiResponse.of(Type.SUCCESS, HttpStatus.OK.value(), null));
     }
