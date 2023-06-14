@@ -4,39 +4,22 @@ import me.harry.apartment_comparison.application.dto.request.LoginServiceRequest
 import me.harry.apartment_comparison.application.dto.response.LoginResponse;
 import me.harry.apartment_comparison.application.exception.LoginFailException;
 import me.harry.apartment_comparison.domain.model.RefreshToken;
-import me.harry.apartment_comparison.domain.model.User;
-import me.harry.apartment_comparison.domain.model.UserId;
 import me.harry.apartment_comparison.domain.model.UserRole;
-import me.harry.apartment_comparison.domain.repository.RefreshTokenRepository;
-import me.harry.apartment_comparison.domain.repository.UserRepository;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-@SpringBootTest
-class LoginServiceTest {
+
+class LoginServiceTest extends ServiceTest {
     @Autowired
     private LoginService loginService;
-
-    @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
-    private RefreshTokenRepository refreshTokenRepository;
-
-    @Autowired
-    private PasswordEncoder passwordEncoder;
-
-    private User testUser;
 
 
     @BeforeEach
@@ -89,17 +72,6 @@ class LoginServiceTest {
         // when then
         assertThatThrownBy(() -> loginService.login(dto))
                 .isInstanceOf(LoginFailException.class);
-    }
-
-    private User createUser(String name, String email, String password, UserRole role, boolean isOut, boolean isAvailable) {
-        return User.builder()
-                .id(UserId.generate())
-                .name(name)
-                .email(email)
-                .encodedPassword(passwordEncoder.encode(password))
-                .role(role)
-                .isOut(isOut)
-                .isAvailable(isAvailable).build();
     }
 
 }

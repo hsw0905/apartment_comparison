@@ -4,6 +4,7 @@ import me.harry.apartment_comparison.application.dto.request.LoginServiceRequest
 import me.harry.apartment_comparison.application.dto.response.LoginResponse;
 import me.harry.apartment_comparison.application.exception.LoginFailException;
 import me.harry.apartment_comparison.application.service.LoginService;
+import me.harry.apartment_comparison.application.service.LogoutService;
 import me.harry.apartment_comparison.domain.model.UserRole;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -18,8 +19,10 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 
 import static org.hamcrest.Matchers.containsString;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.mockito.Mockito.verify;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -33,6 +36,9 @@ class AuthenticationControllerTest extends ControllerTest {
     @MockBean
     private LoginService loginService;
 
+    @MockBean
+    private LogoutService logoutService;
+
     @BeforeEach
     void setUp() {
         given(loginService.login(new LoginServiceRequest("test@example.com", "1234")))
@@ -45,45 +51,6 @@ class AuthenticationControllerTest extends ControllerTest {
                 .willThrow(new LoginFailException("이메일 혹은 비밀번호가 잘못되었습니다."));
     }
 
-    @DisplayName("인증이 필요한 API에 토큰이 없다면 403을 반환한다.")
-    @Test
-    void accessForbiddenWithoutToken() throws Exception {
-        mockMvc.perform(post("/api/v1/auth"))
-                .andExpect(status().isForbidden());
-    }
-
-    @DisplayName("유효하지 않은 토큰으로 접근하면 403을 반환한다.")
-    @Test
-    void accessForbiddenWithIncorrectToken() throws Exception {
-        mockMvc.perform(post("/api/v1/auth")
-                        .header("Authorization", "Bearer incorrectToken")
-                )
-                .andExpect(status().isForbidden());
-    }
-
-    @DisplayName("유효한 토큰으로 접근하면 200을 반환한다.")
-    @Test
-    void accessSuccessWithCorrectToken() throws Exception {
-        mockMvc.perform(get("/api/v1/auth")
-                        .header("Authorization", "Bearer " + userAccessToken)
-                )
-                .andExpect(status().isOk());
-    }
-
-    @DisplayName("유효기간이 지난 토큰으로 접근하면 401을 반환한다.")
-    @Test
-    void accessDeniedWithExpiredToken() throws Exception {
-        // given
-        String expiredToken = tokenGenerator.generate(USER_ID, UserRole.ROLE_USER, Instant.now().minus(5, ChronoUnit.MINUTES));
-
-        // when then
-        mockMvc.perform(get("/api/v1/auth")
-                        .header("Authorization", "Bearer " + expiredToken)
-                )
-                .andDo(print())
-                .andExpect(status().isUnauthorized());
-
-    }
 
     @DisplayName("올바른 이메일과 비밀번호로 로그인 요청시 201을 반환한다.")
     @Test
@@ -142,5 +109,46 @@ class AuthenticationControllerTest extends ControllerTest {
                         .content(json))
                 .andDo(print())
                 .andExpect(status().isBadRequest());
+    }
+
+    @DisplayName("로그인한 사용자는 로그아웃 할 수 있다.")
+    @Test
+    void logoutSuccess() throws Exception {
+        mockMvc.perform(delete("/api/v1/auth/logout")
+                        .header("Authorization", "Bearer " + userAccessToken))
+                .andDo(print())
+                .andExpect(status().isOk());
+
+        verify(logoutService).logout(any(String.class));
+    }
+
+    @DisplayName("토큰이 없으면 로그아웃 할 수 없으며 403을 반환한다.")
+    @Test
+    void logoutFailWithoutToken() throws Exception {
+        mockMvc.perform(delete("/api/v1/auth/logout"))
+                .andExpect(status().isForbidden());
+    }
+
+    @DisplayName("올바르지 않은 토큰으로 로그아웃 할 수 없으며 403을 반환한다.")
+    @Test
+    void logoutFailWithIncorrectToken() throws Exception {
+        mockMvc.perform(delete("/api/v1/auth/logout")
+                        .header("Authorization", "Bearer incorrectToken")
+                )
+                .andExpect(status().isForbidden());
+    }
+
+    @DisplayName("유효기간이 지난 토큰으로 로그아웃 할 수 없으며 401을 반환한다.")
+    @Test
+    void logoutFailWithExpiredToken() throws Exception {
+        // given
+        String expiredToken = tokenGenerator.generate(USER_ID, UserRole.ROLE_USER, Instant.now().minus(5, ChronoUnit.MINUTES));
+
+        // when then
+        mockMvc.perform(delete("/api/v1/auth/logout")
+                        .header("Authorization", "Bearer " + expiredToken)
+                )
+                .andDo(print())
+                .andExpect(status().isUnauthorized());
     }
 }
