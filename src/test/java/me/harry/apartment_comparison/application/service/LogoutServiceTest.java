@@ -3,14 +3,16 @@ package me.harry.apartment_comparison.application.service;
 import me.harry.apartment_comparison.application.dto.request.LoginServiceRequest;
 import me.harry.apartment_comparison.application.dto.request.LogoutServiceRequest;
 import me.harry.apartment_comparison.application.dto.response.LoginResponse;
-import me.harry.apartment_comparison.domain.model.BlackList;
 import me.harry.apartment_comparison.domain.model.UserRole;
-import me.harry.apartment_comparison.domain.repository.BlackListRepository;
+import me.harry.apartment_comparison.presentation.security.TokenType;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
+
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -22,7 +24,9 @@ class LogoutServiceTest extends ServiceTest {
     private LogoutService logoutService;
 
     @Autowired
-    private BlackListRepository blackListRepository;
+    private RedisTemplate<String, Object> redisTemplate;
+
+    private LoginResponse loginResponse;
 
     @BeforeEach
     void setUp() {
@@ -32,7 +36,7 @@ class LogoutServiceTest extends ServiceTest {
 
     @AfterEach
     void tearDown() {
-        blackListRepository.deleteAll();
+        redisTemplate.delete(List.of(loginResponse.accessToken(), loginResponse.refreshToken()));
         refreshTokenRepository.deleteAllInBatch();
         userRepository.deleteAllInBatch();
     }
@@ -41,15 +45,14 @@ class LogoutServiceTest extends ServiceTest {
     @Test
     void logoutSuccess() {
         // given
-        LoginResponse loginResponse = loginService.login(new LoginServiceRequest(testUser.getEmail(), "1234"));
+        loginResponse = loginService.login(new LoginServiceRequest(testUser.getEmail(), "1234"));
 
         // when
-        logoutService.logout(new LogoutServiceRequest(testUser.getId().toString(), loginResponse.accessToken()));
+        logoutService.logout(new LogoutServiceRequest(testUser.getId().toString(), TokenType.ACCESS.toString(), loginResponse.accessToken()));
 
         // then
-        Iterable<BlackList> blackLists = blackListRepository.findAll();
-
-        assertThat(blackLists).hasSize(2);
+        assertThat(redisTemplate.opsForValue().get(loginResponse.accessToken())).isEqualTo(testUser.getId().toString());
+        assertThat(redisTemplate.opsForValue().get(loginResponse.refreshToken())).isEqualTo(testUser.getId().toString());
         assertThat(refreshTokenRepository.findById(loginResponse.refreshToken()).isEmpty()).isTrue();
     }
 }

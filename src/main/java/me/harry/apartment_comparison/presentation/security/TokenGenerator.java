@@ -18,10 +18,11 @@ public class TokenGenerator {
         this.algorithm = Algorithm.HMAC256(secret);
     }
 
-    public String generate(String userId, UserRole role, Instant expireTime) {
+    public String generate(String userId, UserRole role, TokenType tokenType, Instant expireTime) {
         return JWT.create()
                 .withClaim("userId", userId)
                 .withClaim("role", role.toString())
+                .withClaim("type", tokenType.toString())
                 .withExpiresAt(expireTime)
                 .sign(algorithm);
     }

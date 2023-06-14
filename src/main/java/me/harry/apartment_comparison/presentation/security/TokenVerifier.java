@@ -27,7 +27,7 @@ public class TokenVerifier {
         try {
             JWTVerifier verifier = JWT.require(algorithm).build();
             verifier.verify(token);
-            checkBlackList(token);
+            validateBlackList(token);
             return true;
         } catch (TokenExpiredException e) {
             throw new UnAuthorizedException("유효기간이 만료된 토큰입니다.");
@@ -41,18 +41,23 @@ public class TokenVerifier {
             DecodedJWT decoded = JWT.decode(token);
             Claim userId = decoded.getClaim("userId");
             Claim role = decoded.getClaim("role");
+            Claim tokenType = decoded.getClaim("type");
 
-            return AuthUserInfo.of(userId.asString(), role.asString(), token);
+            return AuthUserInfo.of(userId.asString(), role.asString(), tokenType.asString(), token);
         } catch (JWTDecodeException e) {
             throw new UnAuthorizedException("올바르지 않은 JWT Format 입니다.");
         }
     }
 
-    private void checkBlackList(String token) {
-        if (redisTemplate.getConnectionFactory().getConnection().ping() != null) {
+    private void validateBlackList(String token) {
+        if (isRedisReady()) {
             if (redisTemplate.opsForValue().get(token) != null) {
                 throw new UnAuthorizedException("유효하지 않은 토큰입니다. 재로그인이 필요합니다.");
             }
         }
+    }
+
+    private boolean isRedisReady() {
+        return redisTemplate.getConnectionFactory().getConnection().ping() != null;
     }
 }

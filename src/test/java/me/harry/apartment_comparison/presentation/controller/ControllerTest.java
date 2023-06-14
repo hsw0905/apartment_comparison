@@ -6,6 +6,7 @@ import me.harry.apartment_comparison.infrastructure.config.RedisConfig;
 import me.harry.apartment_comparison.infrastructure.config.WebSecurityConfig;
 import me.harry.apartment_comparison.presentation.security.AuthenticationService;
 import me.harry.apartment_comparison.presentation.security.TokenGenerator;
+import me.harry.apartment_comparison.presentation.security.TokenType;
 import me.harry.apartment_comparison.presentation.security.TokenVerifier;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.boot.test.mock.mockito.SpyBean;
@@ -33,14 +34,18 @@ public abstract class ControllerTest {
     protected TokenVerifier tokenVerifier;
 
     protected String userAccessToken;
-
+    protected String userRefreshToken;
     protected String adminAccessToken;
 
     @BeforeEach
     void setUpTokenAndUserDetailsForAuthentication() {
-        userAccessToken = tokenGenerator.generate(USER_ID, UserRole.ROLE_USER, Instant.now().plus(5, ChronoUnit.MINUTES));
-        adminAccessToken = tokenGenerator.generate(USER_ID, UserRole.ROLE_ADMIN, Instant.now().plus(5, ChronoUnit.MINUTES));
+        userAccessToken = tokenGenerator.generate(USER_ID, UserRole.ROLE_USER,
+                TokenType.ACCESS, Instant.now().plus(10, ChronoUnit.MINUTES));
+        adminAccessToken = tokenGenerator.generate(USER_ID, UserRole.ROLE_ADMIN,
+                TokenType.ACCESS, Instant.now().plus(10, ChronoUnit.MINUTES));
 
+        userRefreshToken = tokenGenerator.generate(USER_ID, UserRole.ROLE_USER,
+                TokenType.REFRESH, Instant.now().plus(30, ChronoUnit.MINUTES));
 
     }
 }

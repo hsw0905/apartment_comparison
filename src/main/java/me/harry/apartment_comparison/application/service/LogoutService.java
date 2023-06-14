@@ -2,31 +2,29 @@ package me.harry.apartment_comparison.application.service;
 
 import lombok.extern.slf4j.Slf4j;
 import me.harry.apartment_comparison.application.dto.request.LogoutServiceRequest;
-import me.harry.apartment_comparison.domain.model.BlackList;
+import me.harry.apartment_comparison.application.exception.BadRequestException;
 import me.harry.apartment_comparison.domain.model.RefreshToken;
-import me.harry.apartment_comparison.domain.repository.BlackListRepository;
 import me.harry.apartment_comparison.domain.repository.RefreshTokenRepository;
+import me.harry.apartment_comparison.presentation.security.TokenType;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.concurrent.TimeUnit;
 
 @Slf4j
 @Service
 public class LogoutService {
     private final RefreshTokenRepository refreshTokenRepository;
-    private final BlackListRepository blackListRepository;
     private final RedisTemplate<String, Object> redisTemplate;
     private final long accessTokenExpireTime;
     private final long refreshTokenExpireTime;
 
-    public LogoutService(RefreshTokenRepository refreshTokenRepository, BlackListRepository blackListRepository, RedisTemplate<String, Object> redisTemplate,
+    public LogoutService(RefreshTokenRepository refreshTokenRepository, RedisTemplate<String, Object> redisTemplate,
                          @Value("${jwt.access-expired-time}") long accessTokenExpireTime, @Value("${jwt.refresh-expired-time}") long refreshTokenExpireTime) {
         this.refreshTokenRepository = refreshTokenRepository;
-        this.blackListRepository = blackListRepository;
         this.redisTemplate = redisTemplate;
         this.accessTokenExpireTime = accessTokenExpireTime;
         this.refreshTokenExpireTime = refreshTokenExpireTime;
@@ -35,14 +33,12 @@ public class LogoutService {
     @Transactional
     public void logout(LogoutServiceRequest dto) {
         try {
+            validateAccessType(dto.tokenType());
             RefreshToken refreshToken = refreshTokenRepository.findByUserId(dto.userId()).get();
-            // if redis connected
-            if (redisTemplate.getRequiredConnectionFactory().getConnection().ping() != null) {
-                blackListRepository.saveAll(
-                        List.of(
-                                new BlackList(dto.accessToken(), accessTokenExpireTime),
-                                new BlackList(refreshToken.getRefreshToken(), refreshTokenExpireTime))
-                );
+
+            if (isRedisReady()) {
+                redisTemplate.opsForValue().set(dto.accessToken(), dto.userId(), accessTokenExpireTime, TimeUnit.SECONDS);
+                redisTemplate.opsForValue().set(refreshToken.getRefreshToken(), dto.userId(), refreshTokenExpireTime, TimeUnit.SECONDS);
             }
         } catch (IllegalStateException e) {
             log.error("Redis is not Ready, Please Check Redis Connection");
@@ -51,5 +47,15 @@ public class LogoutService {
         }
 
         refreshTokenRepository.deleteByUserId(dto.userId());
+    }
+
+    private boolean isRedisReady() {
+        return redisTemplate.getRequiredConnectionFactory().getConnection().ping() != null;
+    }
+
+    private void validateAccessType(String tokenType) {
+        if (!tokenType.equals(TokenType.ACCESS.toString())) {
+            throw new BadRequestException("유효한 accessToken이 아닙니다.");
+        }
     }
 }

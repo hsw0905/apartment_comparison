@@ -2,12 +2,16 @@ package me.harry.apartment_comparison.presentation.controller;
 
 import me.harry.apartment_comparison.application.dto.request.LoginServiceRequest;
 import me.harry.apartment_comparison.application.dto.request.LogoutServiceRequest;
+import me.harry.apartment_comparison.application.dto.request.RefreshServiceRequest;
 import me.harry.apartment_comparison.application.dto.response.LoginResponse;
+import me.harry.apartment_comparison.application.dto.response.RefreshResponse;
+import me.harry.apartment_comparison.application.exception.BadRequestException;
 import me.harry.apartment_comparison.application.exception.LoginFailException;
 import me.harry.apartment_comparison.application.service.LoginService;
 import me.harry.apartment_comparison.application.service.LogoutService;
+import me.harry.apartment_comparison.application.service.RefreshTokenService;
 import me.harry.apartment_comparison.domain.model.UserRole;
-import org.junit.jupiter.api.BeforeEach;
+import me.harry.apartment_comparison.presentation.security.TokenType;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,36 +37,24 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @WebMvcTest(AuthenticationController.class)
 class AuthenticationControllerTest extends ControllerTest {
+    private static final String INVALIDATE_REFRESH_TOKEN_MESSAGE = "유효한 refreshToken이 아닙니다.";
     @Autowired
     private MockMvc mockMvc;
-
     @MockBean
     private LoginService loginService;
-
     @MockBean
     private LogoutService logoutService;
-
+    @MockBean
+    private RefreshTokenService refreshTokenService;
     @SpyBean
     private RedisTemplate<String, Object> redisTemplate;
-
-    @BeforeEach
-    void setUp() {
-        given(loginService.login(new LoginServiceRequest("test@example.com", "1234")))
-                .willReturn(new LoginResponse("some-access-token", "some-refresh-token"));
-
-        given(loginService.login(new LoginServiceRequest("xxx", "1234")))
-                .willThrow(new LoginFailException("이메일 혹은 비밀번호가 잘못되었습니다."));
-
-        given(loginService.login(new LoginServiceRequest("test@example.com", "xxx")))
-                .willThrow(new LoginFailException("이메일 혹은 비밀번호가 잘못되었습니다."));
-
-    }
-
 
     @DisplayName("올바른 이메일과 비밀번호로 로그인 요청시 201을 반환한다.")
     @Test
     void loginSuccess() throws Exception {
         // given
+        given(loginService.login(new LoginServiceRequest("test@example.com", "1234")))
+                .willReturn(new LoginResponse("some-access-token", "some-refresh-token"));
         String json = """
                 {
                     "email": "test@example.com",
@@ -84,6 +76,8 @@ class AuthenticationControllerTest extends ControllerTest {
     @Test
     void loginFailWithIncorrectEmail() throws Exception {
         // given
+        given(loginService.login(new LoginServiceRequest("xxx", "1234")))
+                .willThrow(new LoginFailException("이메일 혹은 비밀번호가 잘못되었습니다."));
         String json = """
                 {
                     "email": "xxx",
@@ -103,6 +97,8 @@ class AuthenticationControllerTest extends ControllerTest {
     @Test
     void loginFailWithIncorrectPassword() throws Exception {
         // given
+        given(loginService.login(new LoginServiceRequest("test@example.com", "xxx")))
+                .willThrow(new LoginFailException("이메일 혹은 비밀번호가 잘못되었습니다."));
         String json = """
                 {
                     "email": "test@example.com",
@@ -149,7 +145,8 @@ class AuthenticationControllerTest extends ControllerTest {
     @Test
     void logoutFailWithExpiredToken() throws Exception {
         // given
-        String expiredToken = tokenGenerator.generate(USER_ID, UserRole.ROLE_USER, Instant.now().minus(5, ChronoUnit.MINUTES));
+        String expiredToken = tokenGenerator.generate(USER_ID, UserRole.ROLE_USER,
+                TokenType.ACCESS, Instant.now().minus(5, ChronoUnit.MINUTES));
 
         // when then
         mockMvc.perform(delete("/api/v1/auth/logout")
@@ -163,7 +160,8 @@ class AuthenticationControllerTest extends ControllerTest {
     @Test
     void logoutFailWithBlackListToken() throws Exception {
         // given
-        String blacklistToken = tokenGenerator.generate(USER_ID, UserRole.ROLE_USER, Instant.now().plus(5, ChronoUnit.MINUTES));
+        String blacklistToken = tokenGenerator.generate(USER_ID, UserRole.ROLE_USER,
+                TokenType.ACCESS, Instant.now().plus(5, ChronoUnit.MINUTES));
         redisTemplate.opsForValue().set(blacklistToken, USER_ID);
 
         // when then
@@ -173,4 +171,38 @@ class AuthenticationControllerTest extends ControllerTest {
                 .andDo(print())
                 .andExpect(status().isUnauthorized());
     }
+
+    @DisplayName("올바른 refreshToken으로 갱신 요청할 경우 토큰을 갱신할 수 있다.")
+    @Test
+    void refreshTokenSuccess() throws Exception {
+        // given
+        given(refreshTokenService.refresh(new RefreshServiceRequest(USER_ID, UserRole.ROLE_USER.toString(),
+                TokenType.REFRESH.toString(), userRefreshToken)))
+                .willReturn(new RefreshResponse("new-access-token", "new-refresh-token"));
+
+        // when then
+        mockMvc.perform(post("/api/v1/auth/refresh")
+                        .header("Authorization", "Bearer " + userRefreshToken)
+                )
+                .andDo(print())
+                .andExpect(status().isCreated())
+                .andExpect(content().string(containsString("accessToken")))
+                .andExpect(content().string(containsString("refreshToken")));
+    }
+
+    @DisplayName("accessToken으로 갱신 요청할 경우 토큰을 갱신할 수 없으며, 400을 반환한다.")
+    @Test
+    void refreshTokenFailWithAccessToken() throws Exception {
+        // given
+        given(refreshTokenService.refresh(new RefreshServiceRequest(USER_ID, UserRole.ROLE_USER.toString(),
+                TokenType.ACCESS.toString(), userAccessToken))).willThrow(new BadRequestException(INVALIDATE_REFRESH_TOKEN_MESSAGE));
+
+        // when then
+        mockMvc.perform(post("/api/v1/auth/refresh")
+                        .header("Authorization", "Bearer " + userAccessToken)
+                )
+                .andDo(print())
+                .andExpect(status().isBadRequest());
+    }
+
 }

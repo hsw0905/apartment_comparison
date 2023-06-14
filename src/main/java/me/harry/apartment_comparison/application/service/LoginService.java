@@ -8,6 +8,7 @@ import me.harry.apartment_comparison.domain.model.User;
 import me.harry.apartment_comparison.domain.repository.RefreshTokenRepository;
 import me.harry.apartment_comparison.domain.repository.UserRepository;
 import me.harry.apartment_comparison.presentation.security.TokenGenerator;
+import me.harry.apartment_comparison.presentation.security.TokenType;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -38,8 +39,10 @@ public class LoginService {
     public LoginResponse login(LoginServiceRequest dto) {
         User user = getUser(dto);
 
-        String accessToken = tokenGenerator.generate(user.getId().toString(), user.getRole(), Instant.now().plusSeconds(accessTokenExpireTime));
-        String refreshToken = tokenGenerator.generate(user.getId().toString(), user.getRole(), Instant.now().plusSeconds(refreshTokenExpireTime));
+        String accessToken = tokenGenerator.generate(user.getId().toString(), user.getRole(),
+                TokenType.ACCESS, Instant.now().plusSeconds(accessTokenExpireTime));
+        String refreshToken = tokenGenerator.generate(user.getId().toString(), user.getRole(),
+                TokenType.REFRESH, Instant.now().plusSeconds(refreshTokenExpireTime));
 
         refreshTokenRepository.save(new RefreshToken(refreshToken, user.getId().toString()));
 
