@@ -13,6 +13,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.test.mock.mockito.SpyBean;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -40,6 +42,9 @@ class AuthenticationControllerTest extends ControllerTest {
     @MockBean
     private LogoutService logoutService;
 
+    @SpyBean
+    private RedisTemplate<String, Object> redisTemplate;
+
     @BeforeEach
     void setUp() {
         given(loginService.login(new LoginServiceRequest("test@example.com", "1234")))
@@ -50,6 +55,7 @@ class AuthenticationControllerTest extends ControllerTest {
 
         given(loginService.login(new LoginServiceRequest("test@example.com", "xxx")))
                 .willThrow(new LoginFailException("이메일 혹은 비밀번호가 잘못되었습니다."));
+
     }
 
 
@@ -148,6 +154,21 @@ class AuthenticationControllerTest extends ControllerTest {
         // when then
         mockMvc.perform(delete("/api/v1/auth/logout")
                         .header("Authorization", "Bearer " + expiredToken)
+                )
+                .andDo(print())
+                .andExpect(status().isUnauthorized());
+    }
+
+    @DisplayName("블랙리스트 토큰으로 로그아웃 할 수 없으며, 401을 반환한다.")
+    @Test
+    void logoutFailWithBlackListToken() throws Exception {
+        // given
+        String blacklistToken = tokenGenerator.generate(USER_ID, UserRole.ROLE_USER, Instant.now().plus(5, ChronoUnit.MINUTES));
+        redisTemplate.opsForValue().set(blacklistToken, USER_ID);
+
+        // when then
+        mockMvc.perform(delete("/api/v1/auth/logout")
+                        .header("Authorization", "Bearer " + blacklistToken)
                 )
                 .andDo(print())
                 .andExpect(status().isUnauthorized());

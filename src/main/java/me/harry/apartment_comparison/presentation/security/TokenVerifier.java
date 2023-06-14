@@ -8,7 +8,6 @@ import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.exceptions.TokenExpiredException;
 import com.auth0.jwt.interfaces.Claim;
 import com.auth0.jwt.interfaces.DecodedJWT;
-import me.harry.apartment_comparison.application.exception.BadRequestException;
 import me.harry.apartment_comparison.application.exception.UnAuthorizedException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -50,9 +49,9 @@ public class TokenVerifier {
     }
 
     private void checkBlackList(String token) {
-        if (redisTemplate.getRequiredConnectionFactory().getConnection().ping() != null) {
+        if (redisTemplate.getConnectionFactory().getConnection().ping() != null) {
             if (redisTemplate.opsForValue().get(token) != null) {
-                throw new BadRequestException("유효하지 않은 토큰입니다. 재로그인이 필요합니다.");
+                throw new UnAuthorizedException("유효하지 않은 토큰입니다. 재로그인이 필요합니다.");
             }
         }
     }
