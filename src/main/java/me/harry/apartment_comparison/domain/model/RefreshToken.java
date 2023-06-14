@@ -1,9 +1,6 @@
 package me.harry.apartment_comparison.domain.model;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -17,11 +14,13 @@ public class RefreshToken extends BaseEntity {
     @Id
     @Column(name = "refresh_token", length = 280)
     private String refreshToken;
-    @Column(name = "user_id", length = 100, nullable = false)
-    private String userId;
 
-    public RefreshToken(String refreshToken, String userId) {
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "users_id")
+    private User user;
+
+    public RefreshToken(String refreshToken, User user) {
         this.refreshToken = refreshToken;
-        this.userId = userId;
+        this.user = user;
     }
 }

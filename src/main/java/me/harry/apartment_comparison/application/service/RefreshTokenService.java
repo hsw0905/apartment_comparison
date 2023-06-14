@@ -4,9 +4,13 @@ import lombok.extern.slf4j.Slf4j;
 import me.harry.apartment_comparison.application.dto.request.RefreshServiceRequest;
 import me.harry.apartment_comparison.application.dto.response.RefreshResponse;
 import me.harry.apartment_comparison.application.exception.BadRequestException;
+import me.harry.apartment_comparison.application.exception.NotFoundException;
 import me.harry.apartment_comparison.domain.model.RefreshToken;
+import me.harry.apartment_comparison.domain.model.User;
+import me.harry.apartment_comparison.domain.model.UserId;
 import me.harry.apartment_comparison.domain.model.UserRole;
 import me.harry.apartment_comparison.domain.repository.RefreshTokenRepository;
+import me.harry.apartment_comparison.domain.repository.UserRepository;
 import me.harry.apartment_comparison.presentation.security.TokenGenerator;
 import me.harry.apartment_comparison.presentation.security.TokenType;
 import org.springframework.beans.factory.annotation.Value;
@@ -24,14 +28,16 @@ public class RefreshTokenService {
     private final RefreshTokenRepository refreshTokenRepository;
     private final RedisTemplate<String, Object> redisTemplate;
     private final TokenGenerator tokenGenerator;
+    private final UserRepository userRepository;
     private final long accessTokenExpireTime;
     private final long refreshTokenExpireTime;
 
     public RefreshTokenService(RefreshTokenRepository refreshTokenRepository, RedisTemplate<String, Object> redisTemplate, TokenGenerator tokenGenerator,
-                               @Value("${jwt.access-expired-time}") long accessTokenExpireTime, @Value("${jwt.refresh-expired-time}") long refreshTokenExpireTime) {
+                               UserRepository userRepository, @Value("${jwt.access-expired-time}") long accessTokenExpireTime, @Value("${jwt.refresh-expired-time}") long refreshTokenExpireTime) {
         this.refreshTokenRepository = refreshTokenRepository;
         this.redisTemplate = redisTemplate;
         this.tokenGenerator = tokenGenerator;
+        this.userRepository = userRepository;
         this.accessTokenExpireTime = accessTokenExpireTime;
         this.refreshTokenExpireTime = refreshTokenExpireTime;
     }
@@ -55,9 +61,15 @@ public class RefreshTokenService {
         String refreshToken = tokenGenerator.generate(dto.userId(), UserRole.ROLE_USER,
                 TokenType.REFRESH, Instant.now().plusSeconds(refreshTokenExpireTime));
 
-        refreshTokenRepository.save(new RefreshToken(refreshToken, dto.userId()));
+        User user = getUser(dto.userId());
+        refreshTokenRepository.save(new RefreshToken(refreshToken, user));
 
         return new RefreshResponse(accessToken, refreshToken);
+    }
+
+    private User getUser(String userId) {
+        return userRepository.findById(new UserId(userId))
+                .orElseThrow(() -> new NotFoundException("사용자를 찾을 수 없습니다."));
     }
 
     private void validateRefreshToken(RefreshServiceRequest dto) {

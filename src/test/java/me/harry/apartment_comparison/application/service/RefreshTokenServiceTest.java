@@ -56,7 +56,7 @@ class RefreshTokenServiceTest extends ServiceTest {
         RefreshServiceRequest dto = new RefreshServiceRequest(testUser.getId().toString(), testUser.getRole().toString(),
                 TokenType.REFRESH.toString(), refreshToken);
 
-        refreshTokenRepository.save(new RefreshToken(refreshToken, testUser.getId().toString()));
+        refreshTokenRepository.save(new RefreshToken(refreshToken, testUser));
 
         // when
         RefreshResponse response = refreshTokenService.refresh(dto);

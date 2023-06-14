@@ -44,7 +44,7 @@ public class LoginService {
         String refreshToken = tokenGenerator.generate(user.getId().toString(), user.getRole(),
                 TokenType.REFRESH, Instant.now().plusSeconds(refreshTokenExpireTime));
 
-        refreshTokenRepository.save(new RefreshToken(refreshToken, user.getId().toString()));
+        refreshTokenRepository.save(new RefreshToken(refreshToken, user));
 
         return new LoginResponse(accessToken, refreshToken);
     }

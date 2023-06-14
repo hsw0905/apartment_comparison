@@ -2,6 +2,7 @@ package me.harry.apartment_comparison.presentation.advice;
 
 import lombok.extern.slf4j.Slf4j;
 import me.harry.apartment_comparison.application.exception.BadRequestException;
+import me.harry.apartment_comparison.application.exception.NotFoundException;
 import me.harry.apartment_comparison.application.exception.UnAuthorizedException;
 import me.harry.apartment_comparison.presentation.dto.response.common.ApiResponse;
 import me.harry.apartment_comparison.presentation.dto.response.common.ErrorResponse;
@@ -44,6 +45,15 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity.badRequest().body(
                 ApiResponse.of(Type.FAILURE, HttpStatus.UNAUTHORIZED.value(), new ErrorResponse(HttpStatus.UNAUTHORIZED.toString(), e.getMessage()))
+        );
+    }
+
+    @ExceptionHandler(NotFoundException.class)
+    public ResponseEntity<ApiResponse<ErrorResponse>> handleNotFoundException(NotFoundException e) {
+        log.error(e.getMessage());
+
+        return ResponseEntity.badRequest().body(
+                ApiResponse.of(Type.FAILURE, HttpStatus.NOT_FOUND.value(), new ErrorResponse(HttpStatus.NOT_FOUND.toString(), e.getMessage()))
         );
     }
 
