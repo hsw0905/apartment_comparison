@@ -13,6 +13,6 @@ spring:
 
   datasource:
     driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://localhost:5432/apt_comp
+    url: jdbc:postgresql://localhost:5432/baedal
     username: postgres
     password: 1234
