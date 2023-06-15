@@ -35,7 +35,9 @@ public class WebSecurityConfig {
         http.addFilterBefore(exceptionHandlerFilter, TokenAuthenticationFilter.class);
 
         http.authorizeHttpRequests(
-                requests -> requests.requestMatchers(HttpMethod.POST, "/api/v1/auth/login").permitAll()
+                requests -> requests
+                        .requestMatchers(HttpMethod.POST, "/api/v1/auth/login").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/v1/users").permitAll()
                         .anyRequest().authenticated()
         );
         return http.build();

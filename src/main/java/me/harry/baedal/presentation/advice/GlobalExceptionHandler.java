@@ -2,6 +2,7 @@ package me.harry.baedal.presentation.advice;
 
 import lombok.extern.slf4j.Slf4j;
 import me.harry.baedal.application.exception.BadRequestException;
+import me.harry.baedal.application.exception.ForbiddenException;
 import me.harry.baedal.application.exception.NotFoundException;
 import me.harry.baedal.application.exception.UnAuthorizedException;
 import me.harry.baedal.presentation.dto.response.common.ApiResponse;
@@ -45,6 +46,15 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity.badRequest().body(
                 ApiResponse.of(Type.FAILURE, HttpStatus.UNAUTHORIZED.value(), new ErrorResponse(HttpStatus.UNAUTHORIZED.toString(), e.getMessage()))
+        );
+    }
+
+    @ExceptionHandler(ForbiddenException.class)
+    public ResponseEntity<ApiResponse<ErrorResponse>> handleForbiddenException(ForbiddenException e) {
+        log.error(e.getMessage());
+
+        return ResponseEntity.badRequest().body(
+                ApiResponse.of(Type.FAILURE, HttpStatus.FORBIDDEN.value(), new ErrorResponse(HttpStatus.FORBIDDEN.toString(), e.getMessage()))
         );
     }
 

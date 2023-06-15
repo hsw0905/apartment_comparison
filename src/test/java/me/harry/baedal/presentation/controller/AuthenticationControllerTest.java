@@ -6,7 +6,7 @@ import me.harry.baedal.application.dto.request.RefreshServiceRequest;
 import me.harry.baedal.application.dto.response.LoginResponse;
 import me.harry.baedal.application.dto.response.RefreshResponse;
 import me.harry.baedal.application.exception.BadRequestException;
-import me.harry.baedal.application.exception.LoginFailException;
+import me.harry.baedal.domain.exception.LoginFailException;
 import me.harry.baedal.application.service.LoginService;
 import me.harry.baedal.application.service.LogoutService;
 import me.harry.baedal.application.service.RefreshTokenService;
@@ -53,12 +53,12 @@ class AuthenticationControllerTest extends ControllerTest {
     @Test
     void loginSuccess() throws Exception {
         // given
-        given(loginService.login(new LoginServiceRequest("test@example.com", "1234")))
+        given(loginService.login(new LoginServiceRequest("test@example.com", "Abcd123!")))
                 .willReturn(new LoginResponse("some-access-token", "some-refresh-token"));
         String json = """
                 {
                     "email": "test@example.com",
-                    "password": "1234"
+                    "password": "Abcd123!"
                 }
                 """;
 
@@ -76,12 +76,12 @@ class AuthenticationControllerTest extends ControllerTest {
     @Test
     void loginFailWithIncorrectEmail() throws Exception {
         // given
-        given(loginService.login(new LoginServiceRequest("xxx", "1234")))
+        given(loginService.login(new LoginServiceRequest("xxx", "Abcd123!")))
                 .willThrow(new LoginFailException("이메일 혹은 비밀번호가 잘못되었습니다."));
         String json = """
                 {
                     "email": "xxx",
-                    "password": "1234"
+                    "password": "Abcd123!"
                 }
                 """;
 

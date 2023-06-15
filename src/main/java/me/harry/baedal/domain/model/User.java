@@ -44,4 +44,8 @@ public class User extends BaseEntity {
         this.isOut = isOut;
         this.isAvailable = isAvailable;
     }
+
+    public void reSignup() {
+        isOut = false;
+    }
 }

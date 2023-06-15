@@ -2,7 +2,7 @@ package me.harry.baedal.application.service;
 
 import me.harry.baedal.application.dto.request.LoginServiceRequest;
 import me.harry.baedal.application.dto.response.LoginResponse;
-import me.harry.baedal.application.exception.LoginFailException;
+import me.harry.baedal.domain.exception.LoginFailException;
 import me.harry.baedal.domain.model.RefreshToken;
 import me.harry.baedal.domain.model.User;
 import me.harry.baedal.infrastructure.repository.RefreshTokenRepository;
