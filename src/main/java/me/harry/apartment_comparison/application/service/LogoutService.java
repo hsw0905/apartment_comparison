@@ -7,11 +7,11 @@ import me.harry.apartment_comparison.application.exception.NotFoundException;
 import me.harry.apartment_comparison.domain.model.RefreshToken;
 import me.harry.apartment_comparison.domain.model.User;
 import me.harry.apartment_comparison.domain.model.UserId;
-import me.harry.apartment_comparison.domain.repository.RefreshTokenRepository;
-import me.harry.apartment_comparison.domain.repository.UserRepository;
+import me.harry.apartment_comparison.infrastructure.redis.RedisDao;
+import me.harry.apartment_comparison.infrastructure.repository.RefreshTokenRepository;
+import me.harry.apartment_comparison.infrastructure.repository.UserRepository;
 import me.harry.apartment_comparison.presentation.security.TokenType;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,15 +23,16 @@ import java.util.concurrent.TimeUnit;
 public class LogoutService {
     private final RefreshTokenRepository refreshTokenRepository;
     private final UserRepository userRepository;
-    private final RedisTemplate<String, Object> redisTemplate;
+    private final RedisDao redisDao;
     private final long accessTokenExpireTime;
     private final long refreshTokenExpireTime;
 
-    public LogoutService(RefreshTokenRepository refreshTokenRepository, UserRepository userRepository, RedisTemplate<String, Object> redisTemplate,
-                         @Value("${jwt.access-expired-time}") long accessTokenExpireTime, @Value("${jwt.refresh-expired-time}") long refreshTokenExpireTime) {
+    public LogoutService(RefreshTokenRepository refreshTokenRepository, UserRepository userRepository,
+                         RedisDao redisDao, @Value("${jwt.access-expired-time}") long accessTokenExpireTime,
+                         @Value("${jwt.refresh-expired-time}") long refreshTokenExpireTime) {
         this.refreshTokenRepository = refreshTokenRepository;
         this.userRepository = userRepository;
-        this.redisTemplate = redisTemplate;
+        this.redisDao = redisDao;
         this.accessTokenExpireTime = accessTokenExpireTime;
         this.refreshTokenExpireTime = refreshTokenExpireTime;
     }
@@ -43,9 +44,9 @@ public class LogoutService {
             User user = getUser(dto.userId());
             RefreshToken refreshToken = getRefreshToken(user);
 
-            if (isRedisReady()) {
-                redisTemplate.opsForValue().set(dto.accessToken(), dto.userId(), accessTokenExpireTime, TimeUnit.SECONDS);
-                redisTemplate.opsForValue().set(refreshToken.getRefreshToken(), dto.userId(), refreshTokenExpireTime, TimeUnit.SECONDS);
+            if (redisDao.isRedisReady()) {
+                redisDao.setValueWithExpireTime(dto.accessToken(), dto.userId(), accessTokenExpireTime, TimeUnit.SECONDS);
+                redisDao.setValueWithExpireTime(refreshToken.getRefreshToken(), dto.userId(), refreshTokenExpireTime, TimeUnit.SECONDS);
             }
             refreshTokenRepository.deleteByUser(user);
         } catch (IllegalStateException e) {
@@ -58,10 +59,6 @@ public class LogoutService {
     private RefreshToken getRefreshToken(User user) {
         return refreshTokenRepository.findByUser(user)
                 .orElseThrow(() -> new NotFoundException("토큰을 찾을 수 없습니다. 재로그인이 필요합니다."));
-    }
-
-    private boolean isRedisReady() {
-        return redisTemplate.getRequiredConnectionFactory().getConnection().ping() != null;
     }
 
     private void validateAccessType(String tokenType) {

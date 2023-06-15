@@ -5,7 +5,8 @@ import me.harry.apartment_comparison.application.dto.response.RefreshResponse;
 import me.harry.apartment_comparison.application.exception.BadRequestException;
 import me.harry.apartment_comparison.domain.model.RefreshToken;
 import me.harry.apartment_comparison.domain.model.UserRole;
-import me.harry.apartment_comparison.domain.repository.RefreshTokenRepository;
+import me.harry.apartment_comparison.infrastructure.redis.RedisDao;
+import me.harry.apartment_comparison.infrastructure.repository.RefreshTokenRepository;
 import me.harry.apartment_comparison.presentation.security.TokenGenerator;
 import me.harry.apartment_comparison.presentation.security.TokenType;
 import org.junit.jupiter.api.AfterEach;
@@ -13,9 +14,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.RedisTemplate;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -30,9 +31,10 @@ class RefreshTokenServiceTest extends ServiceTest {
     @Autowired
     private RefreshTokenService refreshTokenService;
     @Autowired
-    private RedisTemplate<String, Object> redisTemplate;
+    private RedisDao redisDao;
     @Autowired
     private TokenGenerator tokenGenerator;
+    private String blacklistToken;
 
     @BeforeEach
     void setUp() {
@@ -70,10 +72,10 @@ class RefreshTokenServiceTest extends ServiceTest {
     @Test
     void refreshTokenFailWithBlackListToken() {
         // given
-        String blacklistToken = tokenGenerator.generate(testUser.getId().toString(), testUser.getRole(),
+        blacklistToken = tokenGenerator.generate(testUser.getId().toString(), testUser.getRole(),
                 TokenType.REFRESH, Instant.now().plusSeconds(refreshTokenExpireTime));
 
-        redisTemplate.opsForValue().set(blacklistToken, testUser.getId().toString(), refreshTokenExpireTime, TimeUnit.SECONDS);
+        redisDao.setValueWithExpireTime(blacklistToken, testUser.getId().toString(), refreshTokenExpireTime, TimeUnit.SECONDS);
 
         RefreshServiceRequest dto = new RefreshServiceRequest(testUser.getId().toString(), testUser.getRole().toString(),
                 TokenType.REFRESH.toString(), blacklistToken);
@@ -81,6 +83,9 @@ class RefreshTokenServiceTest extends ServiceTest {
         // when then
         assertThatThrownBy(() -> refreshTokenService.refresh(dto))
                 .isInstanceOf(BadRequestException.class);
+
+        // tearDown
+        redisDao.delete(List.of(blacklistToken));
     }
 
     @DisplayName("액세스 토큰인 경우 갱신에 실패한다.")

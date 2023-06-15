@@ -1,4 +1,4 @@
-package me.harry.apartment_comparison.domain.repository;
+package me.harry.apartment_comparison.infrastructure.repository;
 
 import me.harry.apartment_comparison.domain.model.User;
 import me.harry.apartment_comparison.domain.model.UserId;

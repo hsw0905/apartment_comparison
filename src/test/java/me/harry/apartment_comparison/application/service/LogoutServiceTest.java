@@ -4,13 +4,13 @@ import me.harry.apartment_comparison.application.dto.request.LoginServiceRequest
 import me.harry.apartment_comparison.application.dto.request.LogoutServiceRequest;
 import me.harry.apartment_comparison.application.dto.response.LoginResponse;
 import me.harry.apartment_comparison.domain.model.UserRole;
+import me.harry.apartment_comparison.infrastructure.redis.RedisDao;
 import me.harry.apartment_comparison.presentation.security.TokenType;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.RedisTemplate;
 
 import java.util.List;
 
@@ -24,7 +24,7 @@ class LogoutServiceTest extends ServiceTest {
     private LogoutService logoutService;
 
     @Autowired
-    private RedisTemplate<String, Object> redisTemplate;
+    private RedisDao redisDao;
 
     private LoginResponse loginResponse;
 
@@ -36,7 +36,7 @@ class LogoutServiceTest extends ServiceTest {
 
     @AfterEach
     void tearDown() {
-        redisTemplate.delete(List.of(loginResponse.accessToken(), loginResponse.refreshToken()));
+        redisDao.delete(List.of(loginResponse.accessToken(), loginResponse.refreshToken()));
         refreshTokenRepository.deleteAllInBatch();
         userRepository.deleteAllInBatch();
     }
@@ -51,8 +51,8 @@ class LogoutServiceTest extends ServiceTest {
         logoutService.logout(new LogoutServiceRequest(testUser.getId().toString(), TokenType.ACCESS.toString(), loginResponse.accessToken()));
 
         // then
-        assertThat(redisTemplate.opsForValue().get(loginResponse.accessToken())).isEqualTo(testUser.getId().toString());
-        assertThat(redisTemplate.opsForValue().get(loginResponse.refreshToken())).isEqualTo(testUser.getId().toString());
+        assertThat(redisDao.findByKey(loginResponse.accessToken())).isEqualTo(testUser.getId().toString());
+        assertThat(redisDao.findByKey(loginResponse.refreshToken())).isEqualTo(testUser.getId().toString());
         assertThat(refreshTokenRepository.findById(loginResponse.refreshToken()).isEmpty()).isTrue();
     }
 }
