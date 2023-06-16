@@ -9,18 +9,18 @@ import com.auth0.jwt.exceptions.TokenExpiredException;
 import com.auth0.jwt.interfaces.Claim;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import me.harry.baedal.application.exception.UnAuthorizedException;
+import me.harry.baedal.infrastructure.redis.RedisDao;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 
 @Component
 public class TokenVerifier {
     private final Algorithm algorithm;
-    private final RedisTemplate<String, Object> redisTemplate;
+    private final RedisDao redisDao;
 
-    public TokenVerifier(@Value("${jwt.secret}") String secret, RedisTemplate<String, Object> redisTemplate) {
+    public TokenVerifier(@Value("${jwt.secret}") String secret, RedisDao redisDao) {
         this.algorithm = Algorithm.HMAC256(secret);
-        this.redisTemplate = redisTemplate;
+        this.redisDao = redisDao;
     }
 
     public boolean verify(String token) {
@@ -50,14 +50,10 @@ public class TokenVerifier {
     }
 
     private void validateBlackList(String token) {
-        if (isRedisReady()) {
-            if (redisTemplate.opsForValue().get(token) != null) {
+        if (redisDao.isRedisReady()) {
+            if (redisDao.findByKey(token) != null) {
                 throw new UnAuthorizedException("유효하지 않은 토큰입니다. 재로그인이 필요합니다.");
             }
         }
-    }
-
-    private boolean isRedisReady() {
-        return redisTemplate.getConnectionFactory().getConnection().ping() != null;
     }
 }
