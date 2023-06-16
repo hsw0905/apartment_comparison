@@ -1,5 +1,6 @@
 package me.harry.baedal.presentation.controller;
 
+import me.harry.baedal.application.service.DeactivateUserService;
 import me.harry.baedal.application.service.SignupService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -9,6 +10,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -20,6 +22,8 @@ class UserControllerTest extends ControllerTest {
     private MockMvc mockMvc;
     @MockBean
     private SignupService signupService;
+    @MockBean
+    private DeactivateUserService deactivateUserService;
 
     @DisplayName("올바른 입력값으로 회원 가입을 할 수 있다.")
     @Test
@@ -79,5 +83,14 @@ class UserControllerTest extends ControllerTest {
                         .content(json)
                 ).andDo(print())
                 .andExpect(status().isBadRequest());
+    }
+
+    @DisplayName("회원가입된 사용자는 탈퇴할 수 있다.")
+    @Test
+    void deactivateUserSuccess() throws Exception {
+        mockMvc.perform(delete("/api/v1/users")
+                        .header("Authorization", "Bearer " + userAccessToken))
+                .andDo(print())
+                .andExpect(status().isOk());
     }
 }

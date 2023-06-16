@@ -50,4 +50,8 @@ public class User extends BaseEntity {
     public void reSignup() {
         isOut = false;
     }
+
+    public void deactivateUser() {
+        isOut = true;
+    }
 }
