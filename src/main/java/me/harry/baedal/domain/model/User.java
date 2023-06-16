@@ -9,7 +9,9 @@ import me.harry.baedal.domain.model.common.BaseEntity;
 
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@Table(name = "users")
+@Table(name = "users", indexes = {
+        @Index(name = "idx_unique_email", columnList = "email", unique = true)
+})
 @Entity
 public class User extends BaseEntity {
     @EmbeddedId

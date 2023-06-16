@@ -7,6 +7,7 @@ import me.harry.baedal.domain.model.User;
 import me.harry.baedal.domain.model.UserId;
 import me.harry.baedal.domain.model.UserRole;
 import me.harry.baedal.infrastructure.repository.UserRepository;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,6 +16,7 @@ import java.util.Optional;
 
 @Service
 public class SignupService {
+    private static final String DUPLICATED_USER_EXCEPTION_MESSAGE = "이미 가입된 사용자입니다.";
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
@@ -28,17 +30,22 @@ public class SignupService {
         Optional<User> duplicatedUser = userRepository.findByEmail(dto.email());
 
         if (duplicatedUser.isEmpty()) {
-            userRepository.save(
-                    User.builder()
-                            .id(UserId.generate())
-                            .email(dto.email())
-                            .name(dto.name())
-                            .encodedPassword(passwordEncoder.encode(dto.password()))
-                            .role(UserRole.ROLE_USER)
-                            .isOut(false)
-                            .isAvailable(true)
-                            .build()
-            );
+            try {
+                userRepository.save(
+                        User.builder()
+                                .id(UserId.generate())
+                                .email(dto.email())
+                                .name(dto.name())
+                                .encodedPassword(passwordEncoder.encode(dto.password()))
+                                .role(UserRole.ROLE_USER)
+                                .isOut(false)
+                                .isAvailable(true)
+                                .build()
+                );
+            } catch (DataIntegrityViolationException e) {
+                throw new DuplicatedUserException(DUPLICATED_USER_EXCEPTION_MESSAGE);
+            }
+
             return;
         }
 
@@ -51,7 +58,7 @@ public class SignupService {
         if (user.isOut()) {
             user.reSignup();
         } else {
-            throw new DuplicatedUserException("이미 가입된 사용자입니다.");
+            throw new DuplicatedUserException(DUPLICATED_USER_EXCEPTION_MESSAGE);
         }
 
     }
