@@ -26,8 +26,11 @@ public class RedisDao {
         redisTemplate.opsForValue().set(key, value, timeout, timeUnit);
     }
 
-    // NullPointerException 주의
     public void delete(Collection<String> keys) {
         redisTemplate.delete(keys);
+    }
+
+    public Boolean hasKey(String key) {
+        return Boolean.TRUE.equals(redisTemplate.hasKey(key));
     }
 }

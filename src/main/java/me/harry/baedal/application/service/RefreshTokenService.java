@@ -20,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.NoSuchElementException;
+import java.util.concurrent.TimeUnit;
 
 @Slf4j
 @Service
@@ -49,6 +50,7 @@ public class RefreshTokenService {
         try {
             if (redisDao.isRedisReady()) {
                 validateBlackList(dto.refreshToken());
+                redisDao.setValueWithExpireTime(dto.refreshToken(), dto.userId(), refreshTokenExpireTime, TimeUnit.SECONDS);
             }
         } catch (IllegalStateException e) {
             log.error("Redis is not Ready, Please Check Redis Connection");
@@ -63,7 +65,8 @@ public class RefreshTokenService {
                 TokenType.REFRESH, Instant.now().plusSeconds(refreshTokenExpireTime));
 
         User user = getUser(dto.userId());
-        refreshTokenRepository.save(new RefreshToken(refreshToken, user));
+        RefreshToken entity = getRefreshToken(user);
+        entity.changeRefreshToken(refreshToken);
 
         return new RefreshResponse(accessToken, refreshToken);
     }
@@ -73,8 +76,13 @@ public class RefreshTokenService {
                 .orElseThrow(() -> new NotFoundException("사용자를 찾을 수 없습니다."));
     }
 
+    private RefreshToken getRefreshToken(User user) {
+        return refreshTokenRepository.findByUser(user)
+                .orElseThrow(() -> new NotFoundException("Refresh Token을 찾을 수 없습니다."));
+    }
+
     private void validateRefreshToken(RefreshServiceRequest dto) {
-        if (refreshTokenRepository.findById(dto.refreshToken()).isEmpty()) {
+        if (refreshTokenRepository.findByRefreshToken(dto.refreshToken()).isEmpty()) {
             throw new BadRequestException(INVALIDATE_REFRESH_TOKEN_MESSAGE);
         }
     }

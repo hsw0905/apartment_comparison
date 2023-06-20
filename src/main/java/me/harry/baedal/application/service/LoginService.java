@@ -4,6 +4,7 @@ import me.harry.baedal.application.dto.request.LoginServiceRequest;
 import me.harry.baedal.application.dto.response.LoginResponse;
 import me.harry.baedal.domain.exception.LoginFailException;
 import me.harry.baedal.domain.model.RefreshToken;
+import me.harry.baedal.domain.model.RefreshTokenId;
 import me.harry.baedal.domain.model.User;
 import me.harry.baedal.infrastructure.repository.RefreshTokenRepository;
 import me.harry.baedal.infrastructure.repository.UserRepository;
@@ -44,7 +45,7 @@ public class LoginService {
         String refreshToken = tokenGenerator.generate(user.getId().toString(), user.getRole(),
                 TokenType.REFRESH, Instant.now().plusSeconds(refreshTokenExpireTime));
 
-        refreshTokenRepository.save(new RefreshToken(refreshToken, user));
+        refreshTokenRepository.save(new RefreshToken(RefreshTokenId.generate(), user, refreshToken));
 
         return new LoginResponse(accessToken, refreshToken);
     }
