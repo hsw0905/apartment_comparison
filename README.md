@@ -3,7 +3,7 @@
 ## Flow(Kakao Oven)
 ### 카테고리 -> 가게 List
 <img width="300" alt="image" src="https://github.com/hsw0905/baedal/assets/64395235/95d9a398-07e3-4d0a-8e0a-cd120515692c">
-<img width="340" alt="image" src="https://github.com/hsw0905/baedal/assets/64395235/522b4eea-11fe-46b7-b062-b166cad3101c">
-<img width="340" alt="image" src="https://github.com/hsw0905/baedal/assets/64395235/9dcc81da-89ec-4e76-acce-eefb773bde02">
+<img width="300" alt="image" src="https://github.com/hsw0905/baedal/assets/64395235/522b4eea-11fe-46b7-b062-b166cad3101c">
+<img width="300" alt="image" src="https://github.com/hsw0905/baedal/assets/64395235/9dcc81da-89ec-4e76-acce-eefb773bde02">
 
 
