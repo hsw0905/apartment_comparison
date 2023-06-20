@@ -1,9 +1,12 @@
 package me.harry.baedal.application.service;
 
+import me.harry.baedal.application.dto.request.LoginServiceRequest;
 import me.harry.baedal.application.dto.request.RefreshServiceRequest;
+import me.harry.baedal.application.dto.response.LoginResponse;
 import me.harry.baedal.application.dto.response.RefreshResponse;
 import me.harry.baedal.application.exception.BadRequestException;
 import me.harry.baedal.domain.model.RefreshToken;
+import me.harry.baedal.domain.model.RefreshTokenId;
 import me.harry.baedal.domain.model.UserRole;
 import me.harry.baedal.infrastructure.redis.RedisDao;
 import me.harry.baedal.infrastructure.repository.RefreshTokenRepository;
@@ -31,19 +34,26 @@ class RefreshTokenServiceTest extends ServiceTest {
     @Autowired
     private RefreshTokenService refreshTokenService;
     @Autowired
+    private LoginService loginService;
+    @Autowired
     private RedisDao redisDao;
     @Autowired
     private TokenGenerator tokenGenerator;
     private String blacklistToken;
+    private static String PASSWORD = "Abcd123!";
+    private LoginResponse loginResponse;
 
     @BeforeEach
     void setUp() {
-        testUser = createUser("tester", "test@example.com", "1234", UserRole.ROLE_USER, false, true);
+        testUser = createUser("tester", "test@example.com", PASSWORD, UserRole.ROLE_USER, false, true);
         userRepository.save(testUser);
     }
 
     @AfterEach
     void tearDown() {
+        if (loginResponse != null ) {
+            cleanRedis();
+        }
         refreshTokenRepository.deleteAllInBatch();
         userRepository.deleteAllInBatch();
     }
@@ -52,20 +62,17 @@ class RefreshTokenServiceTest extends ServiceTest {
     @Test
     void refreshTokenSuccess() {
         // given
-        String refreshToken = tokenGenerator.generate(testUser.getId().toString(), testUser.getRole(),
-                TokenType.REFRESH, Instant.now().plusSeconds(refreshTokenExpireTime));
+        loginResponse = loginService.login(new LoginServiceRequest(testUser.getEmail(), PASSWORD));
 
         RefreshServiceRequest dto = new RefreshServiceRequest(testUser.getId().toString(), testUser.getRole().toString(),
-                TokenType.REFRESH.toString(), refreshToken);
-
-        refreshTokenRepository.save(new RefreshToken(refreshToken, testUser));
+                TokenType.REFRESH.toString(), loginResponse.refreshToken());
 
         // when
-        RefreshResponse response = refreshTokenService.refresh(dto);
+        RefreshResponse refreshResponse = refreshTokenService.refresh(dto);
 
         // then
-        assertThat(refreshTokenRepository.findById(refreshToken).isPresent()).isTrue();
-        assertThat(response.refreshToken()).isEqualTo(refreshToken);
+        assertThat(refreshTokenRepository.findByUser(testUser).isPresent()).isTrue();
+        assertThat(refreshResponse.refreshToken()).isNotEmpty();
     }
 
     @DisplayName("블랙리스트 토큰인 경우 갱신에 실패한다.")
@@ -115,5 +122,15 @@ class RefreshTokenServiceTest extends ServiceTest {
         // when then
         assertThatThrownBy(() -> refreshTokenService.refresh(dto))
                 .isInstanceOf(BadRequestException.class);
+    }
+
+
+    private void cleanRedis() {
+        if (redisDao.hasKey(loginResponse.accessToken())) {
+            redisDao.delete(List.of(loginResponse.accessToken()));
+        }
+        else if (redisDao.hasKey(loginResponse.refreshToken())) {
+            redisDao.delete(List.of(loginResponse.refreshToken()));
+        }
     }
 }

@@ -12,7 +12,7 @@ spring:
         format_sql: true
 
   datasource:
-    driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://localhost:5432/baedal
-    username: postgres
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/baedal
+    username: root
     password: 1234

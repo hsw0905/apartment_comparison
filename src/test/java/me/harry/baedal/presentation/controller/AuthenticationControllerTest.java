@@ -48,12 +48,14 @@ class AuthenticationControllerTest extends ControllerTest {
     private RefreshTokenService refreshTokenService;
     @SpyBean
     private RedisTemplate<String, Object> redisTemplate;
+    private static String EMAIL = "test@example.com";
+    private static String PASSWORD = "Abcd123!";
 
     @DisplayName("올바른 이메일과 비밀번호로 로그인 요청시 201을 반환한다.")
     @Test
     void loginSuccess() throws Exception {
         // given
-        given(loginService.login(new LoginServiceRequest("test@example.com", "Abcd123!")))
+        given(loginService.login(new LoginServiceRequest(EMAIL, PASSWORD)))
                 .willReturn(new LoginResponse("some-access-token", "some-refresh-token"));
         String json = """
                 {
@@ -76,7 +78,7 @@ class AuthenticationControllerTest extends ControllerTest {
     @Test
     void loginFailWithIncorrectEmail() throws Exception {
         // given
-        given(loginService.login(new LoginServiceRequest("xxx", "Abcd123!")))
+        given(loginService.login(new LoginServiceRequest("xxx", PASSWORD)))
                 .willThrow(new LoginFailException("이메일 혹은 비밀번호가 잘못되었습니다."));
         String json = """
                 {
@@ -97,7 +99,7 @@ class AuthenticationControllerTest extends ControllerTest {
     @Test
     void loginFailWithIncorrectPassword() throws Exception {
         // given
-        given(loginService.login(new LoginServiceRequest("test@example.com", "xxx")))
+        given(loginService.login(new LoginServiceRequest(EMAIL, "xxx")))
                 .willThrow(new LoginFailException("이메일 혹은 비밀번호가 잘못되었습니다."));
         String json = """
                 {

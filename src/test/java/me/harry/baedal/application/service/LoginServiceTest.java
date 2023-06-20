@@ -21,10 +21,12 @@ class LoginServiceTest extends ServiceTest {
     @Autowired
     private LoginService loginService;
 
+    private static String PASSWORD = "Abcd123!";
+
 
     @BeforeEach
     void setUp() {
-        testUser = createUser("tester", "test@example.com", "1234", UserRole.ROLE_USER, false, true);
+        testUser = createUser("tester", "test@example.com", PASSWORD, UserRole.ROLE_USER, false, true);
         userRepository.save(testUser);
     }
 
@@ -38,13 +40,13 @@ class LoginServiceTest extends ServiceTest {
     @Test
     void loginSuccessWithEmailAndPassword() {
         // given
-        LoginServiceRequest dto = new LoginServiceRequest(testUser.getEmail(), "1234");
+        LoginServiceRequest dto = new LoginServiceRequest(testUser.getEmail(), PASSWORD);
 
         // when
         LoginResponse response = loginService.login(dto);
 
         // then
-        Optional<RefreshToken> token = refreshTokenRepository.findById(testUser.getId().toString());
+        Optional<RefreshToken> token = refreshTokenRepository.findByUser(testUser);
 
         assertThat(response.accessToken()).isNotBlank();
         assertThat(token).isNotNull();
@@ -55,7 +57,7 @@ class LoginServiceTest extends ServiceTest {
     void loginFailWithIncorrectEmail() {
         // given
         String wrongEmail = "xxx";
-        LoginServiceRequest dto = new LoginServiceRequest(wrongEmail, "1234");
+        LoginServiceRequest dto = new LoginServiceRequest(wrongEmail, PASSWORD);
 
         // when then
         assertThatThrownBy(() -> loginService.login(dto))

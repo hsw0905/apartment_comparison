@@ -1,35 +1,50 @@
-package me.harry.baedal.application.service;
+package me.harry.baedal.acceptance;
 
+import io.restassured.RestAssured;
 import me.harry.baedal.BaedalApplication;
 import me.harry.baedal.domain.model.User;
 import me.harry.baedal.domain.model.UserId;
 import me.harry.baedal.domain.model.UserRole;
 import me.harry.baedal.infrastructure.config.RedisConfig;
 import me.harry.baedal.infrastructure.config.WebSecurityConfig;
-import me.harry.baedal.infrastructure.repository.RefreshTokenRepository;
-import me.harry.baedal.infrastructure.repository.UserRepository;
+import me.harry.baedal.presentation.security.TokenGenerator;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ContextConfiguration;
 
-@SpringBootTest
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ContextConfiguration(classes = {
         BaedalApplication.class,
         WebSecurityConfig.class,
         RedisConfig.class
 })
-public abstract class ServiceTest {
-    @Autowired
-    protected UserRepository userRepository;
-
-    @Autowired
-    protected RefreshTokenRepository refreshTokenRepository;
-
+public class AcceptanceTest {
     @Autowired
     protected PasswordEncoder passwordEncoder;
 
+    @Autowired
+    protected TokenGenerator tokenGenerator;
+
     protected User testUser;
+
+    protected String userAccessToken;
+
+    protected String userRefreshToken;
+
+    @LocalServerPort
+    private int port;
+
+    @Autowired
+    private DatabaseCleanup databaseCleanup;
+
+    @BeforeEach
+    void setUp() {
+        RestAssured.port = port;
+    }
 
     protected User createUser(String name, String email, String password, UserRole role, boolean isOut, boolean isAvailable) {
         return User.builder()
@@ -40,5 +55,10 @@ public abstract class ServiceTest {
                 .role(role)
                 .isOut(isOut)
                 .isAvailable(isAvailable).build();
+    }
+
+    @AfterEach
+    void tearDown() {
+        databaseCleanup.execute();
     }
 }

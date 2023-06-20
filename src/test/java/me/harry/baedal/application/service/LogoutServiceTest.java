@@ -17,6 +17,7 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class LogoutServiceTest extends ServiceTest {
+    private static final String PASSWORD = "Abcd123!";
     @Autowired
     private LoginService loginService;
 
@@ -30,7 +31,7 @@ class LogoutServiceTest extends ServiceTest {
 
     @BeforeEach
     void setUp() {
-        testUser = createUser("tester", "test@example.com", "1234", UserRole.ROLE_USER, false, true);
+        testUser = createUser("tester", "test@example.com", PASSWORD, UserRole.ROLE_USER, false, true);
         userRepository.save(testUser);
     }
 
@@ -45,7 +46,7 @@ class LogoutServiceTest extends ServiceTest {
     @Test
     void logoutSuccess() {
         // given
-        loginResponse = loginService.login(new LoginServiceRequest(testUser.getEmail(), "1234"));
+        loginResponse = loginService.login(new LoginServiceRequest(testUser.getEmail(), PASSWORD));
 
         // when
         logoutService.logout(new LogoutServiceRequest(testUser.getId().toString(), TokenType.ACCESS.toString(), loginResponse.accessToken()));
@@ -53,6 +54,6 @@ class LogoutServiceTest extends ServiceTest {
         // then
         assertThat(redisDao.findByKey(loginResponse.accessToken())).isEqualTo(testUser.getId().toString());
         assertThat(redisDao.findByKey(loginResponse.refreshToken())).isEqualTo(testUser.getId().toString());
-        assertThat(refreshTokenRepository.findById(loginResponse.refreshToken()).isEmpty()).isTrue();
+        assertThat(refreshTokenRepository.findByUser(testUser).isEmpty()).isTrue();
     }
 }
