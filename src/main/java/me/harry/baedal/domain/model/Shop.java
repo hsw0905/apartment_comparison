@@ -3,11 +3,13 @@ package me.harry.baedal.domain.model;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+@Getter
 @Entity
 @Table(name = "shops")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)

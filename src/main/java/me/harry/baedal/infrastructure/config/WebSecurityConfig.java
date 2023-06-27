@@ -38,6 +38,7 @@ public class WebSecurityConfig {
                 requests -> requests
                         .requestMatchers(HttpMethod.POST, "/api/v1/auth/login").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/v1/users").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/categories").permitAll()
                         .anyRequest().authenticated()
         );
         return http.build();

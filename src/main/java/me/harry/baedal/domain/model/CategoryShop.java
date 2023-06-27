@@ -3,8 +3,10 @@ package me.harry.baedal.domain.model;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+@Getter
 @Entity
 @Table(name = "category_shops")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
