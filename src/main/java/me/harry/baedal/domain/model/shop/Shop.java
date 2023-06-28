@@ -31,11 +31,13 @@ public class Shop {
     @Column(name = "cumlateive_fee_rate")
     private BigDecimal cumulativeFeeRate;
 
-    @Column(name = "cumlateive_fee")
-    private BigDecimal cumulativeFee;
+    @Embedded
+    @AttributeOverride(name = "amount", column = @Column(name = "cumulative_fee"))
+    private Money cumulativeFee;
 
-    @Column(name = "delivery_fee")
-    private BigDecimal deliveryFee;
+    @Embedded
+    @AttributeOverride(name = "amount", column = @Column(name = "delivery_fee"))
+    private Money deliveryFee;
 
     @Column(name = "description", columnDefinition = "TEXT")
     private String description;
@@ -53,7 +55,7 @@ public class Shop {
     private BigDecimal longitude;
 
     @Builder
-    public Shop(ShopId id, String name, boolean isOpen, Money minOrderPrice, BigDecimal cumulativeFeeRate, BigDecimal cumulativeFee, BigDecimal deliveryFee, String description, LocalDateTime deliveryMinTime, LocalDateTime deliveryMaxTime, BigDecimal latitude, BigDecimal longitude) {
+    public Shop(ShopId id, String name, boolean isOpen, Money minOrderPrice, BigDecimal cumulativeFeeRate, Money cumulativeFee, Money deliveryFee, String description, LocalDateTime deliveryMinTime, LocalDateTime deliveryMaxTime, BigDecimal latitude, BigDecimal longitude) {
         this.id = id;
         this.name = name;
         this.isOpen = isOpen;
