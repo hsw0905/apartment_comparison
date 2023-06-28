@@ -1,7 +1,7 @@
 package me.harry.baedal.presentation.controller;
 
 import me.harry.baedal.BaedalApplication;
-import me.harry.baedal.domain.model.UserRole;
+import me.harry.baedal.domain.model.user.UserRole;
 import me.harry.baedal.infrastructure.config.RedisConfig;
 import me.harry.baedal.infrastructure.config.WebSecurityConfig;
 import me.harry.baedal.infrastructure.redis.RedisDao;

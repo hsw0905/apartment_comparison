@@ -2,7 +2,7 @@ package me.harry.baedal.presentation.security;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
-import me.harry.baedal.domain.model.UserRole;
+import me.harry.baedal.domain.model.user.UserRole;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 

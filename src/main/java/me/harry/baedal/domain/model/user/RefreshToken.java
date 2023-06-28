@@ -1,4 +1,4 @@
-package me.harry.baedal.domain.model;
+package me.harry.baedal.domain.model.user;
 
 import jakarta.persistence.*;
 import lombok.AccessLevel;

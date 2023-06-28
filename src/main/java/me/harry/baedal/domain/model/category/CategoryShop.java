@@ -1,10 +1,11 @@
-package me.harry.baedal.domain.model;
+package me.harry.baedal.domain.model.category;
 
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import me.harry.baedal.domain.model.shop.Shop;
 
 @Getter
 @Entity

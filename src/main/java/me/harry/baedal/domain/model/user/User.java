@@ -1,4 +1,4 @@
-package me.harry.baedal.domain.model;
+package me.harry.baedal.domain.model.user;
 
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -17,7 +17,7 @@ public class User extends BaseEntity {
     @EmbeddedId
     private UserId id;
 
-    @Column(name = "email", length = 200)
+    @Column(name = "email", length = 200, unique = true)
     private String email;
 
     @Column(name = "password", length = 100)

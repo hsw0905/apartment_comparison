@@ -2,9 +2,9 @@ package me.harry.baedal.acceptance;
 
 import io.restassured.RestAssured;
 import me.harry.baedal.BaedalApplication;
-import me.harry.baedal.domain.model.User;
-import me.harry.baedal.domain.model.UserId;
-import me.harry.baedal.domain.model.UserRole;
+import me.harry.baedal.domain.model.user.User;
+import me.harry.baedal.domain.model.user.UserId;
+import me.harry.baedal.domain.model.user.UserRole;
 import me.harry.baedal.infrastructure.config.RedisConfig;
 import me.harry.baedal.infrastructure.config.WebSecurityConfig;
 import me.harry.baedal.presentation.security.TokenGenerator;

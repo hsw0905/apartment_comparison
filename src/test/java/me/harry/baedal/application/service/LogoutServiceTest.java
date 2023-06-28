@@ -3,7 +3,7 @@ package me.harry.baedal.application.service;
 import me.harry.baedal.application.dto.request.LoginServiceRequest;
 import me.harry.baedal.application.dto.request.LogoutServiceRequest;
 import me.harry.baedal.application.dto.response.LoginResponse;
-import me.harry.baedal.domain.model.UserRole;
+import me.harry.baedal.domain.model.user.UserRole;
 import me.harry.baedal.infrastructure.redis.RedisDao;
 import me.harry.baedal.presentation.security.TokenType;
 import org.junit.jupiter.api.AfterEach;

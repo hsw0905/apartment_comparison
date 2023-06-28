@@ -5,7 +5,7 @@ import io.restassured.http.ContentType;
 import me.harry.baedal.application.dto.request.LoginServiceRequest;
 import me.harry.baedal.application.dto.response.LoginResponse;
 import me.harry.baedal.application.service.LoginService;
-import me.harry.baedal.domain.model.UserRole;
+import me.harry.baedal.domain.model.user.UserRole;
 import me.harry.baedal.infrastructure.redis.RedisDao;
 import me.harry.baedal.infrastructure.repository.UserRepository;
 import me.harry.baedal.presentation.dto.request.LoginRequest;

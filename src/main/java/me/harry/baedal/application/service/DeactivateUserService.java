@@ -2,8 +2,8 @@ package me.harry.baedal.application.service;
 
 import me.harry.baedal.application.dto.request.DeactivateUserServiceRequest;
 import me.harry.baedal.domain.exception.UserNotFoundException;
-import me.harry.baedal.domain.model.User;
-import me.harry.baedal.domain.model.UserId;
+import me.harry.baedal.domain.model.user.User;
+import me.harry.baedal.domain.model.user.UserId;
 import me.harry.baedal.infrastructure.repository.UserRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

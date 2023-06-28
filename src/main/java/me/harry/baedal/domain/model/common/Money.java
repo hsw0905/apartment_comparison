@@ -1,4 +1,4 @@
-package me.harry.baedal.domain.model;
+package me.harry.baedal.domain.model.common;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;

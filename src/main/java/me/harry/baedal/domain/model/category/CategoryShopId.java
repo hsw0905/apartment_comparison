@@ -1,4 +1,4 @@
-package me.harry.baedal.domain.model;
+package me.harry.baedal.domain.model.category;
 
 import jakarta.persistence.Embeddable;
 import me.harry.baedal.domain.model.common.EntityId;

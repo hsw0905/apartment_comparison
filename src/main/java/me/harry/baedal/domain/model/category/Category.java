@@ -1,4 +1,4 @@
-package me.harry.baedal.domain.model;
+package me.harry.baedal.domain.model.category;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.EmbeddedId;

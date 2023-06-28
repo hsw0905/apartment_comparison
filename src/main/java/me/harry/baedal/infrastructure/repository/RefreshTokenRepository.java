@@ -1,7 +1,7 @@
 package me.harry.baedal.infrastructure.repository;
 
-import me.harry.baedal.domain.model.RefreshToken;
-import me.harry.baedal.domain.model.User;
+import me.harry.baedal.domain.model.user.RefreshToken;
+import me.harry.baedal.domain.model.user.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;

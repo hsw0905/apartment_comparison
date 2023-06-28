@@ -1,10 +1,11 @@
-package me.harry.baedal.domain.model;
+package me.harry.baedal.domain.model.shop;
 
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import me.harry.baedal.domain.model.common.Money;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;

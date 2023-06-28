@@ -2,8 +2,8 @@ package me.harry.baedal.acceptance;
 
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
-import me.harry.baedal.domain.model.Category;
-import me.harry.baedal.domain.model.CategoryId;
+import me.harry.baedal.domain.model.category.Category;
+import me.harry.baedal.domain.model.category.CategoryId;
 import me.harry.baedal.infrastructure.repository.CategoryRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

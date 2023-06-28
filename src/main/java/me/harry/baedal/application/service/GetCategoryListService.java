@@ -1,7 +1,7 @@
 package me.harry.baedal.application.service;
 
 import me.harry.baedal.application.dto.response.CategoryResponse;
-import me.harry.baedal.domain.model.Category;
+import me.harry.baedal.domain.model.category.Category;
 import me.harry.baedal.infrastructure.repository.CategoryRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

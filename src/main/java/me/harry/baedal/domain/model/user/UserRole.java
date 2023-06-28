@@ -1,4 +1,4 @@
-package me.harry.baedal.domain.model;
+package me.harry.baedal.domain.model.user;
 
 public enum UserRole {
     ROLE_USER("ROLE_USER"),

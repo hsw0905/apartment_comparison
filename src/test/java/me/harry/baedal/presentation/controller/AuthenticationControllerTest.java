@@ -10,7 +10,7 @@ import me.harry.baedal.domain.exception.LoginFailException;
 import me.harry.baedal.application.service.LoginService;
 import me.harry.baedal.application.service.LogoutService;
 import me.harry.baedal.application.service.RefreshTokenService;
-import me.harry.baedal.domain.model.UserRole;
+import me.harry.baedal.domain.model.user.UserRole;
 import me.harry.baedal.presentation.security.TokenType;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
