@@ -8,6 +8,7 @@ import java.io.Serializable;
 @Embeddable
 public class ShopId extends EntityId implements Serializable {
     protected ShopId() {
+        super();
     }
 
     public ShopId(String value) {
