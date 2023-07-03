@@ -44,7 +44,7 @@ public class ExceptionHandlerFilter extends OncePerRequestFilter {
         try {
             response.getWriter().write(objectMapper.writeValueAsString(apiResponse));
         } catch (IOException e) {
-            log.error("[ExceptionHandlerFilter]- " + e.getMessage());
+            log.error("[ExceptionHandlerFilter]- {}", e.getMessage(), e);
         }
     }
 

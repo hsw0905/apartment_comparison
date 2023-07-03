@@ -5,8 +5,10 @@ import io.restassured.http.ContentType;
 import me.harry.baedal.application.dto.request.LoginServiceRequest;
 import me.harry.baedal.application.dto.response.LoginResponse;
 import me.harry.baedal.application.service.LoginService;
+import me.harry.baedal.domain.model.user.User;
 import me.harry.baedal.domain.model.user.UserRole;
 import me.harry.baedal.infrastructure.redis.RedisDao;
+import me.harry.baedal.infrastructure.repository.RefreshTokenRepository;
 import me.harry.baedal.infrastructure.repository.UserRepository;
 import me.harry.baedal.presentation.dto.request.LoginRequest;
 import me.harry.baedal.presentation.security.TokenType;
@@ -15,6 +17,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -29,9 +32,6 @@ public class AuthenticationTest extends AcceptanceTest {
 
     @Autowired
     private LoginService loginService;
-
-    @Autowired
-    private RedisDao redisDao;
 
     @Override
     @BeforeEach

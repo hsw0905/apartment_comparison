@@ -42,18 +42,25 @@ public class LogoutService {
         try {
             validateAccessType(dto.tokenType());
             User user = getUser(dto.userId());
-            RefreshToken refreshToken = getRefreshToken(user);
+            RefreshToken entity = getRefreshToken(user);
 
             if (redisDao.isRedisReady()) {
-                redisDao.setValueWithExpireTime(dto.accessToken(), dto.userId(), accessTokenExpireTime, TimeUnit.SECONDS);
-                redisDao.setValueWithExpireTime(refreshToken.getRefreshToken(), dto.userId(), refreshTokenExpireTime, TimeUnit.SECONDS);
+                registerOldAccessTokenToBlacklist(dto.accessToken(), dto.userId());
+                registerOldRefreshTokenToBlacklist(entity.getRefreshToken(), dto.userId());
             }
-            refreshTokenRepository.deleteByUser(user);
         } catch (IllegalStateException e) {
-            log.error("Redis is not Ready, Please Check Redis Connection");
+            log.error("Redis is not Ready, Please Check Redis Connection - {}", e.getMessage(), e);
         } catch (NoSuchElementException e) {
-            log.error("Not found refreshToken, userId: " + dto.userId());
+            log.error("Not found refreshToken, userId: " + dto.userId() + "- {}", e.getMessage(), e);
         }
+    }
+
+    private void registerOldRefreshTokenToBlacklist(String oldRefreshToken, String userId) {
+        redisDao.setValueWithExpireTime(oldRefreshToken, userId, refreshTokenExpireTime, TimeUnit.SECONDS);
+    }
+
+    private void registerOldAccessTokenToBlacklist(String accessToken, String userId) {
+        redisDao.setValueWithExpireTime(accessToken, userId, accessTokenExpireTime, TimeUnit.SECONDS);
     }
 
     private RefreshToken getRefreshToken(User user) {

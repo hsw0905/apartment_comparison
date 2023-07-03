@@ -47,18 +47,8 @@ public class RefreshTokenService {
     @Transactional
     public RefreshResponse refresh(RefreshServiceRequest dto) {
         validateRefreshType(dto.tokenType());
-        try {
-            if (redisDao.isRedisReady()) {
-                validateBlackList(dto.refreshToken());
-                redisDao.setValueWithExpireTime(dto.refreshToken(), dto.userId(), refreshTokenExpireTime, TimeUnit.SECONDS);
-            }
-        } catch (IllegalStateException e) {
-            log.error("Redis is not Ready, Please Check Redis Connection");
+        validateRefreshTokenInRedis(dto);
 
-        } catch (NoSuchElementException e) {
-            log.error("Not found refreshToken, userId: " + dto.userId());
-        }
-        validateRefreshToken(dto);
         String accessToken = tokenGenerator.generate(dto.userId(), UserRole.ROLE_USER,
                 TokenType.ACCESS, Instant.now().plusSeconds(accessTokenExpireTime));
         String refreshToken = tokenGenerator.generate(dto.userId(), UserRole.ROLE_USER,
@@ -71,6 +61,24 @@ public class RefreshTokenService {
         return new RefreshResponse(accessToken, refreshToken);
     }
 
+    private void validateRefreshTokenInRedis(RefreshServiceRequest dto) {
+        try {
+            if (redisDao.isRedisReady()) {
+                validateBlackList(dto.refreshToken());
+                registerOldRefreshTokenToBlacklist(dto);
+            }
+        } catch (IllegalStateException e) {
+            log.error("Redis is not Ready, Please Check Redis Connection -{} ", e.getMessage(), e);
+            validateRefreshTokenInDatabase(dto);
+        } catch (NoSuchElementException e) {
+            log.error("Not found refreshToken, userId: " + dto.userId() + " -{}", e.getMessage(), e);
+        }
+    }
+
+    private void registerOldRefreshTokenToBlacklist(RefreshServiceRequest dto) {
+        redisDao.setValueWithExpireTime(dto.refreshToken(), dto.userId(), refreshTokenExpireTime, TimeUnit.SECONDS);
+    }
+
     private User getUser(String userId) {
         return userRepository.findById(new UserId(userId))
                 .orElseThrow(() -> new NotFoundException("사용자를 찾을 수 없습니다."));
@@ -78,23 +86,24 @@ public class RefreshTokenService {
 
     private RefreshToken getRefreshToken(User user) {
         return refreshTokenRepository.findByUser(user)
-                .orElseThrow(() -> new NotFoundException("Refresh Token을 찾을 수 없습니다."));
+                .orElseThrow(() -> new NotFoundException("Refresh Token을 찾을 수 없습니다. 재로그인이 필요합니다."));
     }
 
-    private void validateRefreshToken(RefreshServiceRequest dto) {
-        if (refreshTokenRepository.findByRefreshToken(dto.refreshToken()).isEmpty()) {
-            throw new BadRequestException(INVALIDATE_REFRESH_TOKEN_MESSAGE);
-        }
+    private void validateRefreshTokenInDatabase(RefreshServiceRequest dto) {
+        refreshTokenRepository.findByRefreshToken(dto.refreshToken())
+                .orElseThrow(() -> new BadRequestException(INVALIDATE_REFRESH_TOKEN_MESSAGE));
     }
 
     private void validateRefreshType(String tokenType) {
         if (!tokenType.equals(TokenType.REFRESH.toString())) {
+            log.error("Refresh Type이 아닙니다.");
             throw new BadRequestException(INVALIDATE_REFRESH_TOKEN_MESSAGE);
         }
     }
 
     private void validateBlackList(String refreshToken) {
-        if (redisDao.findByKey(refreshToken) != null) {
+        if (redisDao.findByKey(refreshToken).isPresent()) {
+            log.error("[RefreshTokenService] Blacklist Token : "+ refreshToken);
             throw new BadRequestException(INVALIDATE_REFRESH_TOKEN_MESSAGE);
         }
     }

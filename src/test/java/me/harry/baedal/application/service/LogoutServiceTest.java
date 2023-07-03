@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertAll;
 
 class LogoutServiceTest extends ServiceTest {
     private static final String PASSWORD = "Abcd123!";
@@ -37,12 +38,12 @@ class LogoutServiceTest extends ServiceTest {
 
     @AfterEach
     void tearDown() {
-        redisDao.delete(List.of(loginResponse.accessToken(), loginResponse.refreshToken()));
+        redisDao.clear();
         refreshTokenRepository.deleteAllInBatch();
         userRepository.deleteAllInBatch();
     }
 
-    @DisplayName("로그아웃시 해당 사용자의 refreshToken이 삭제되며, redis에 blacklist 토큰이 등록된다.")
+    @DisplayName("로그아웃시 redis에 blacklist 토큰이 등록된다.")
     @Test
     void logoutSuccess() {
         // given
@@ -52,8 +53,12 @@ class LogoutServiceTest extends ServiceTest {
         logoutService.logout(new LogoutServiceRequest(testUser.getId().toString(), TokenType.ACCESS.toString(), loginResponse.accessToken()));
 
         // then
-        assertThat(redisDao.findByKey(loginResponse.accessToken())).isEqualTo(testUser.getId().toString());
-        assertThat(redisDao.findByKey(loginResponse.refreshToken())).isEqualTo(testUser.getId().toString());
-        assertThat(refreshTokenRepository.findByUser(testUser).isEmpty()).isTrue();
+        assertAll(
+                () -> assertThat(redisDao.findByKey(loginResponse.accessToken()).isPresent()).isTrue(),
+                () -> assertThat(redisDao.findByKey(loginResponse.refreshToken()).isPresent()).isTrue(),
+                () -> assertThat(redisDao.findByKey(loginResponse.accessToken()).get()).isEqualTo(testUser.getId().toString()),
+                () -> assertThat(redisDao.findByKey(loginResponse.refreshToken()).get()).isEqualTo(testUser.getId().toString())
+        );
+
     }
 }

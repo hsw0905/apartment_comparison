@@ -4,6 +4,8 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 
 import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 @Component
@@ -18,8 +20,8 @@ public class RedisDao {
         return redisTemplate.getRequiredConnectionFactory().getConnection().ping() != null;
     }
 
-    public Object findByKey(String key) {
-        return redisTemplate.opsForValue().get(key);
+    public Optional<Object> findByKey(String key) {
+        return Optional.ofNullable(redisTemplate.opsForValue().get(key));
     }
 
     public void setValueWithExpireTime(String key, Object value, long timeout, TimeUnit timeUnit) {
@@ -32,5 +34,9 @@ public class RedisDao {
 
     public Boolean hasKey(String key) {
         return Boolean.TRUE.equals(redisTemplate.hasKey(key));
+    }
+
+    public void clear() {
+        redisTemplate.getRequiredConnectionFactory().getConnection().serverCommands().flushAll();
     }
 }

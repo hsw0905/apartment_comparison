@@ -8,11 +8,14 @@ import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.exceptions.TokenExpiredException;
 import com.auth0.jwt.interfaces.Claim;
 import com.auth0.jwt.interfaces.DecodedJWT;
+import lombok.extern.slf4j.Slf4j;
+import me.harry.baedal.application.exception.BadRequestException;
 import me.harry.baedal.application.exception.UnAuthorizedException;
 import me.harry.baedal.infrastructure.redis.RedisDao;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+@Slf4j
 @Component
 public class TokenVerifier {
     private final Algorithm algorithm;
@@ -51,7 +54,8 @@ public class TokenVerifier {
 
     private void validateBlackList(String token) {
         if (redisDao.isRedisReady()) {
-            if (redisDao.findByKey(token) != null) {
+            if (redisDao.findByKey(token).isPresent()) {
+                log.error("[TokenVerifier] Blacklist Token : "+ token);
                 throw new UnAuthorizedException("유효하지 않은 토큰입니다. 재로그인이 필요합니다.");
             }
         }

@@ -49,9 +49,7 @@ class RefreshTokenServiceTest extends ServiceTest {
 
     @AfterEach
     void tearDown() {
-        if (loginResponse != null ) {
-            cleanRedis();
-        }
+        redisDao.clear();
         refreshTokenRepository.deleteAllInBatch();
         userRepository.deleteAllInBatch();
     }
@@ -108,27 +106,4 @@ class RefreshTokenServiceTest extends ServiceTest {
                 .isInstanceOf(BadRequestException.class);
     }
 
-    @DisplayName("로그아웃하여 DB에 refreshToken이 삭제된 경우 갱신 실패한다.")
-    @Test
-    void refreshTokenFailWhenTokenIsNotInDB() {
-        // given
-        String refreshToken = tokenGenerator.generate(testUser.getId().toString(), testUser.getRole(),
-                TokenType.REFRESH, Instant.now().plusSeconds(refreshTokenExpireTime));
-        RefreshServiceRequest dto = new RefreshServiceRequest(testUser.getId().toString(), testUser.getRole().toString(),
-                TokenType.REFRESH.toString(), refreshToken);
-
-        // when then
-        assertThatThrownBy(() -> refreshTokenService.refresh(dto))
-                .isInstanceOf(BadRequestException.class);
-    }
-
-
-    private void cleanRedis() {
-        if (redisDao.hasKey(loginResponse.accessToken())) {
-            redisDao.delete(List.of(loginResponse.accessToken()));
-        }
-        else if (redisDao.hasKey(loginResponse.refreshToken())) {
-            redisDao.delete(List.of(loginResponse.refreshToken()));
-        }
-    }
 }

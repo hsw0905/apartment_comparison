@@ -7,6 +7,7 @@ import me.harry.baedal.domain.model.user.UserId;
 import me.harry.baedal.domain.model.user.UserRole;
 import me.harry.baedal.infrastructure.config.RedisConfig;
 import me.harry.baedal.infrastructure.config.WebSecurityConfig;
+import me.harry.baedal.infrastructure.redis.RedisDao;
 import me.harry.baedal.presentation.security.TokenGenerator;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -15,6 +16,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ContextConfiguration;
+
+import java.util.List;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ContextConfiguration(classes = {
@@ -28,6 +31,9 @@ public class AcceptanceTest {
 
     @Autowired
     protected TokenGenerator tokenGenerator;
+
+    @Autowired
+    protected RedisDao redisDao;
 
     protected User testUser;
 
@@ -59,6 +65,7 @@ public class AcceptanceTest {
 
     @AfterEach
     void tearDown() {
+        redisDao.clear();
         databaseCleanup.execute();
     }
 }
