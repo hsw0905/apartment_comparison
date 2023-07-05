@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.NoSuchElementException;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 @Slf4j
@@ -39,15 +40,19 @@ public class LogoutService {
 
     @Transactional
     public void logout(LogoutServiceRequest dto) {
-        try {
-            validateAccessType(dto.tokenType());
-            User user = getUser(dto.userId());
-            RefreshToken entity = getRefreshToken(user);
+        validateAccessType(dto.tokenType());
 
-            if (redisDao.isRedisReady()) {
-                registerOldAccessTokenToBlacklist(dto.accessToken(), dto.userId());
-                registerOldRefreshTokenToBlacklist(entity.getRefreshToken(), dto.userId());
-            }
+        User user = getUser(dto.userId());
+        Optional<RefreshToken> refreshToken = refreshTokenRepository.findByUser(user);
+
+        registerBlacklistToRedis(dto, refreshToken);
+        refreshToken.ifPresent(entity -> refreshTokenRepository.deleteByUser(user));
+    }
+
+    private void registerBlacklistToRedis(LogoutServiceRequest dto, Optional<RefreshToken> refreshToken) {
+        try {
+            addOldAccessTokenToBlacklist(dto.accessToken(), dto.userId());
+            refreshToken.ifPresent(entity -> addOldRefreshTokenToBlacklist(entity.getRefreshToken(), dto.userId()));
         } catch (IllegalStateException e) {
             log.error("Redis is not Ready, Please Check Redis Connection - {}", e.getMessage(), e);
         } catch (NoSuchElementException e) {
@@ -55,17 +60,12 @@ public class LogoutService {
         }
     }
 
-    private void registerOldRefreshTokenToBlacklist(String oldRefreshToken, String userId) {
+    private void addOldRefreshTokenToBlacklist(String oldRefreshToken, String userId) {
         redisDao.setValueWithExpireTime(oldRefreshToken, userId, refreshTokenExpireTime, TimeUnit.SECONDS);
     }
 
-    private void registerOldAccessTokenToBlacklist(String accessToken, String userId) {
+    private void addOldAccessTokenToBlacklist(String accessToken, String userId) {
         redisDao.setValueWithExpireTime(accessToken, userId, accessTokenExpireTime, TimeUnit.SECONDS);
-    }
-
-    private RefreshToken getRefreshToken(User user) {
-        return refreshTokenRepository.findByUser(user)
-                .orElseThrow(() -> new NotFoundException("토큰을 찾을 수 없습니다. 재로그인이 필요합니다."));
     }
 
     private void validateAccessType(String tokenType) {
