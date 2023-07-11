@@ -16,7 +16,7 @@ import me.harry.baedal.domain.model.common.BaseEntity;
 public class Category extends BaseEntity {
     @EmbeddedId
     private CategoryId id;
-    @Column(name = "name", length = 50)
+    @Column(name = "name", length = 50, nullable = false)
     private String name;
     @Column(name = "image_url", length = 300)
     private String imageUrl;

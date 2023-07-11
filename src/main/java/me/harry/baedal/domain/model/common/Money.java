@@ -10,7 +10,7 @@ import java.math.BigDecimal;
 @Embeddable
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Money {
-    @Column(name = "amount")
+    @Column(name = "amount", nullable = false)
     private BigDecimal amount;
 
     public Money(BigDecimal amount) {

@@ -18,29 +18,29 @@ public class Menu extends BaseEntity {
     private MenuId id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "shops_id")
-    private Shop shop;
+    @JoinColumn(name = "menu_groups_id")
+    private MenuGroup menuGroup;
 
-    @Column(name = "name", length = 100)
+    @Column(name = "name", length = 100, nullable = false)
     private String name;
-
-    @Column(name = "image_url", length = 300)
-    private String imageUrl;
 
     @Embedded
     @AttributeOverride(name = "amount", column = @Column(name = "price"))
     private Money price;
 
+    @Column(name = "image_url", length = 300)
+    private String imageUrl;
+
     @Column(name = "description", columnDefinition = "TEXT")
     private String description;
 
     @Builder
-    public Menu(MenuId id, Shop shop, String name, String imageUrl, Money price, String description) {
+    public Menu(MenuId id, MenuGroup menuGroup, String name, Money price, String imageUrl, String description) {
         this.id = id;
-        this.shop = shop;
+        this.menuGroup = menuGroup;
         this.name = name;
-        this.imageUrl = imageUrl;
         this.price = price;
+        this.imageUrl = imageUrl;
         this.description = description;
     }
 }

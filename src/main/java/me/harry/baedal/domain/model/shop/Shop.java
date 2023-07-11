@@ -18,17 +18,17 @@ public class Shop {
     @EmbeddedId
     private ShopId id;
 
-    @Column(name = "name", length = 100)
+    @Column(name = "name", length = 100, nullable = false)
     private String name;
 
-    @Column(name = "is_open")
+    @Column(name = "is_open", nullable = false)
     private boolean isOpen;
 
     @Embedded
     @AttributeOverride(name = "amount", column = @Column(name = "min_order_price"))
     private Money minOrderPrice;
 
-    @Column(name = "cumlateive_fee_rate")
+    @Column(name = "cumlateive_fee_rate", nullable = false)
     private BigDecimal cumulativeFeeRate;
 
     @Embedded

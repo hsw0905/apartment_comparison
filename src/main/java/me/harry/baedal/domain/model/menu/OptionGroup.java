@@ -20,13 +20,13 @@ public class OptionGroup extends BaseEntity {
     @JoinColumn(name = "menus_id")
     private Menu menu;
 
-    @Column(name = "name", length = 100)
+    @Column(name = "name", length = 100, nullable = false)
     private String name;
 
-    @Column(name = "is_basic_choice")
+    @Column(name = "is_basic_choice", nullable = false)
     private boolean isBasicChoice;
 
-    @Column(name = "is_exclusive_choice")
+    @Column(name = "is_exclusive_choice", nullable = false)
     private boolean isExclusiveChoice;
 
     @Builder

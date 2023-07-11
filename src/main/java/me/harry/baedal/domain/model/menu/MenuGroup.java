@@ -6,32 +6,27 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import me.harry.baedal.domain.model.common.BaseEntity;
-import me.harry.baedal.domain.model.common.Money;
+import me.harry.baedal.domain.model.shop.Shop;
 
 @Getter
 @Entity
-@Table(name = "options")
+@Table(name = "menu_groups")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Option extends BaseEntity {
+public class MenuGroup extends BaseEntity {
     @EmbeddedId
-    private OptionId id;
+    private MenuGroupId id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "option_groups_id")
-    private OptionGroup optionGroup;
+    @JoinColumn(name = "shops_id")
+    private Shop shop;
 
     @Column(name = "name", length = 100, nullable = false)
     private String name;
 
-    @Embedded
-    @AttributeOverride(name = "amount", column = @Column(name = "price"))
-    private Money price;
-
     @Builder
-    public Option(OptionId id, OptionGroup optionGroup, String name, Money price) {
+    public MenuGroup(MenuGroupId id, Shop shop, String name) {
         this.id = id;
-        this.optionGroup = optionGroup;
+        this.shop = shop;
         this.name = name;
-        this.price = price;
     }
 }
