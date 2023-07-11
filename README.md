@@ -10,7 +10,7 @@
 
 
 ### 메뉴 List -> 옵션그룹 -> 장바구니
-<img width="230" alt="image" src="https://github.com/hsw0905/baedal/assets/64395235/142e276b-e5bc-47c3-87bb-8be431c3bbc7">
+<img width="230" alt="image" src="https://github.com/hsw0905/baedal/assets/64395235/206ff581-c240-415f-97c6-9614665f930b">
 <img width="230" alt="image" src="https://github.com/hsw0905/baedal/assets/64395235/44a84631-37a7-44ef-b420-8e787141cd69">
 <img width="230" alt="image" src="https://github.com/hsw0905/baedal/assets/64395235/2d2c137a-aa7a-45cb-936b-81b891d8a543">
 
